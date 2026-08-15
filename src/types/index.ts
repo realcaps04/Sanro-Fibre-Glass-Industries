@@ -135,6 +135,11 @@ export interface BusinessSettings {
   email: string;
   gstin: string;
   logo: string;
+  bankAccountName: string;
+  bankAccountNumber: string;
+  bankIfsc: string;
+  bankName: string;
+  upiId: string;
 }
 
 export interface InvoiceSettings {

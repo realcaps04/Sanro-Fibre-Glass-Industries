@@ -10,6 +10,11 @@ export const defaultSettings: AppSettings = {
     email: brandConfig.email,
     gstin: brandConfig.gstin,
     logo: brandConfig.logo,
+    bankAccountName: brandConfig.legalName,
+    bankAccountNumber: "",
+    bankIfsc: "",
+    bankName: "",
+    upiId: "",
   },
   invoice: {
     prefix: "INV-",

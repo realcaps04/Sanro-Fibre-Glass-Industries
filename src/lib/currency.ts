@@ -8,6 +8,11 @@ const inrDecimal = new Intl.NumberFormat("en-IN", {
   minimumFractionDigits: 0,
 });
 
+const inrMoney = new Intl.NumberFormat("en-IN", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 export function formatCurrency(amount: number): string {
   const sign = amount < 0 ? "-" : "";
   return `${sign}₹${inr.format(Math.abs(Math.round(amount)))}`;
@@ -21,4 +26,9 @@ export function formatCurrencySigned(amount: number): string {
 export function formatCurrencyDecimal(amount: number): string {
   const sign = amount < 0 ? "-" : "";
   return `${sign}₹${inrDecimal.format(Math.abs(amount))}`;
+}
+
+export function formatInvoiceAmount(amount: number): string {
+  const sign = amount < 0 ? "-" : "";
+  return `${sign}₹ ${inrMoney.format(Math.abs(amount))}`;
 }

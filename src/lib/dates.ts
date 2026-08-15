@@ -56,6 +56,19 @@ export function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
+export function formatIndianDate(value: string | Date): string {
+  const date = parseDate(value);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${day}/${month}/${date.getFullYear()}`;
+}
+
+export function addDays(value: string | Date, days: number): Date {
+  const date = parseDate(value);
+  date.setDate(date.getDate() + days);
+  return date;
+}
+
 export function formatDate(value: string | Date): string {
   const date = parseDate(value);
   return `${date.getDate()} ${MONTHS_SHORT[date.getMonth()]} ${date.getFullYear()}`;

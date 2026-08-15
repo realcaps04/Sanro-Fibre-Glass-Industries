@@ -125,6 +125,72 @@ export default function Settings() {
       </section>
 
       <section className="elevated rounded-lg p-4">
+        <h2 className="text-sm font-semibold">Bank & UPI</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          These details print on GST invoices for customer payments.
+        </p>
+        <div className="mt-4 space-y-3">
+          <div>
+            <Label htmlFor="biz-acc-name">Account holder name</Label>
+            <Input
+              id="biz-acc-name"
+              value={business.bankAccountName ?? ""}
+              onChange={(event) =>
+                setBusiness((current) => ({ ...current, bankAccountName: event.target.value }))
+              }
+            />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="biz-acc-no">Account number</Label>
+              <Input
+                id="biz-acc-no"
+                value={business.bankAccountNumber ?? ""}
+                onChange={(event) =>
+                  setBusiness((current) => ({ ...current, bankAccountNumber: event.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="biz-ifsc">IFSC</Label>
+              <Input
+                id="biz-ifsc"
+                value={business.bankIfsc ?? ""}
+                onChange={(event) =>
+                  setBusiness((current) => ({
+                    ...current,
+                    bankIfsc: event.target.value.toUpperCase(),
+                  }))
+                }
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="biz-bank">Bank name</Label>
+            <Input
+              id="biz-bank"
+              value={business.bankName ?? ""}
+              onChange={(event) =>
+                setBusiness((current) => ({ ...current, bankName: event.target.value }))
+              }
+            />
+          </div>
+          <div>
+            <Label htmlFor="biz-upi">UPI ID</Label>
+            <Input
+              id="biz-upi"
+              value={business.upiId ?? ""}
+              onChange={(event) =>
+                setBusiness((current) => ({ ...current, upiId: event.target.value }))
+              }
+              placeholder="sanro@upi"
+            />
+          </div>
+          <Button onClick={() => void saveBusiness()}>Save bank details</Button>
+        </div>
+      </section>
+
+      <section className="elevated rounded-lg p-4">
         <h2 className="text-sm font-semibold">Invoice Settings</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div>

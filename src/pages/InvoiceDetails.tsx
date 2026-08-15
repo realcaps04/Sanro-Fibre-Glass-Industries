@@ -1,20 +1,53 @@
 import { InvoicePreview } from "@/components/billing/InvoicePreview";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { PaymentSheet } from "@/components/payments/PaymentSheet";
 import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
-import { Download, Printer, Share2 } from "lucide-react";
+import { formatInvoiceAmount } from "@/lib/currency";
+import { downloadInvoicePdf } from "@/lib/invoicePdf";
+import { whatsappChatUrl } from "@/lib/whatsapp";
+import { Download, LoaderCircle, Printer, Share2 } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 
+function invoiceShareText(
+  invoice: {
+    number: string;
+    customerName: string;
+    grandTotal: number;
+    amountPaid: number;
+    balance: number;
+    items: Array<{ name: string; quantity: number; amount: number }>;
+  },
+  businessName: string,
+) {
+  const items = invoice.items
+    .map(
+      (item, index) =>
+        `${index + 1}. ${item.name} x ${item.quantity} = ${formatInvoiceAmount(item.amount)}`,
+    )
+    .join("\n");
+  return [
+    `Hello ${invoice.customerName},`,
+    "",
+    `Invoice ${invoice.number} from ${businessName}.`,
+    "",
+    items,
+    "",
+    `Total: ${formatInvoiceAmount(invoice.grandTotal)}`,
+    `Paid: ${formatInvoiceAmount(invoice.amountPaid)}`,
+    `Balance: ${formatInvoiceAmount(invoice.balance)}`,
+    "",
+    "Please check the bill. Thank you.",
+  ].join("\n");
+}
+
 export default function InvoiceDetails() {
   const { id } = useParams();
-  const { invoices, customers, settings, cancelInvoice } = useData();
+  const { invoices, customers, settings } = useData();
   const { toast } = useToast();
-  const [payOpen, setPayOpen] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const invoice = invoices.find((item) => item.id === id);
   const customer = customers.find((item) => item.id === invoice?.customerId);
 
@@ -27,65 +60,75 @@ export default function InvoiceDetails() {
     );
   }
 
-  const share = async () => {
-    const text = `${invoice.number} · ${invoice.customerName}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: invoice.number, text });
-        return;
-      }
-      await navigator.clipboard.writeText(text);
-      toast("Invoice details copied");
-    } catch {
-      toast("Unable to share invoice", "danger");
+  const share = () => {
+    if (!customer?.phone) {
+      toast("This customer has no WhatsApp number", "danger");
+      return;
     }
+    const url = whatsappChatUrl(
+      customer.phone,
+      invoiceShareText(invoice, settings.business.legalName),
+    );
+    if (!url) {
+      toast("Customer phone number is not valid for WhatsApp", "danger");
+      return;
+    }
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  const printInvoice = () => {
-    window.print();
-    toast("PDF ready");
+  const downloadPdf = async () => {
+    const element = document.getElementById("invoice-print-root");
+    if (!element) return;
+    setDownloading(true);
+    try {
+      await downloadInvoicePdf(element, `${invoice.number.replace(/\s+/g, "-")}.pdf`);
+      toast("PDF downloaded", "success");
+    } catch {
+      toast("Unable to download PDF", "danger");
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
     <div>
-      <PageHeader
-        title={`Invoice #${invoice.number}`}
-        backTo="/billing"
-        actions={<StatusBadge status={invoice.status} />}
-        className="print:hidden"
-      />
-      <div className="no-print mb-5 flex flex-wrap gap-2">
-        <Button variant="outline" icon={<Share2 className="h-4 w-4" />} onClick={() => void share()}>
+      <PageHeader title={`Invoice ${invoice.number}`} backTo="/billing" className="print:hidden" />
+      <div className="no-print mb-4 grid grid-cols-3 gap-2">
+        <Button
+          variant="outline"
+          className="px-2 text-xs sm:text-sm"
+          icon={<Share2 className="h-4 w-4" />}
+          onClick={share}
+        >
           Share
         </Button>
-        <Button variant="outline" icon={<Download className="h-4 w-4" />} onClick={printInvoice}>
+        <Button
+          variant="outline"
+          className="px-2 text-xs sm:text-sm"
+          disabled={downloading}
+          icon={
+            downloading ? (
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )
+          }
+          onClick={() => void downloadPdf()}
+        >
           Download PDF
         </Button>
-        <Button variant="outline" icon={<Printer className="h-4 w-4" />} onClick={printInvoice}>
+        <Button
+          variant="outline"
+          className="px-2 text-xs sm:text-sm"
+          icon={<Printer className="h-4 w-4" />}
+          onClick={() => window.print()}
+        >
           Print
         </Button>
-        {invoice.balance > 0 && invoice.status !== "cancelled" ? (
-          <Button onClick={() => setPayOpen(true)}>Record Payment</Button>
-        ) : null}
-        {invoice.status !== "cancelled" && invoice.status !== "paid" ? (
-          <Button
-            variant="ghost"
-            onClick={() => {
-              void cancelInvoice(invoice.id);
-              toast("Invoice cancelled");
-            }}
-          >
-            Cancel
-          </Button>
-        ) : null}
       </div>
-      <InvoicePreview invoice={invoice} settings={settings} customer={customer} />
-      <PaymentSheet
-        open={payOpen}
-        onClose={() => setPayOpen(false)}
-        presetCustomerId={invoice.customerId}
-        presetInvoiceId={invoice.id}
-      />
+      <div className="overflow-x-auto pb-4">
+        <InvoicePreview invoice={invoice} settings={settings} customer={customer} />
+      </div>
     </div>
   );
 }
