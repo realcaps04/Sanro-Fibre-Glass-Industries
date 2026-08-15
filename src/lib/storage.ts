@@ -1,4 +1,4 @@
-const PREFIX = "sanro:v1:";
+const PREFIX = "sanro:v2:";
 
 export const storage = {
   get<T>(key: string, fallback: T): T {

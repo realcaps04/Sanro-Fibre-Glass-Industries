@@ -1,34 +1,20 @@
-import { dummyCustomerIds, mockCustomers } from "@/data/customers";
 import { createId, matchesQuery } from "@/lib/search";
 import { createCollection } from "@/services/collection";
 import type { Customer } from "@/types";
 
-const collection = createCollection("customers", mockCustomers);
-
-function readCatalog(): Customer[] {
-  const stored = collection.read();
-  const withoutDummy = stored.filter((customer) => !dummyCustomerIds.includes(customer.id));
-  const hasEdison = withoutDummy.some(
-    (customer) => customer.id === "cus_edison" || customer.phone === "7510483455",
-  );
-  const next = hasEdison ? withoutDummy : [...mockCustomers, ...withoutDummy];
-  if (next.length !== stored.length || stored.some((customer) => dummyCustomerIds.includes(customer.id))) {
-    collection.write(next);
-  }
-  return next;
-}
+const collection = createCollection<Customer>("customers", []);
 
 export const customerService = {
   async getCustomers(): Promise<Customer[]> {
-    return readCatalog();
+    return collection.read();
   },
 
   async getCustomerById(id: string): Promise<Customer | undefined> {
-    return readCatalog().find((customer) => customer.id === id);
+    return collection.read().find((customer) => customer.id === id);
   },
 
   async searchCustomers(query: string): Promise<Customer[]> {
-    return readCatalog().filter((customer) =>
+    return collection.read().filter((customer) =>
       matchesQuery(
         query,
         customer.name,
@@ -50,7 +36,7 @@ export const customerService = {
       id: createId("cus"),
       createdAt: new Date().toISOString(),
     };
-    collection.write([customer, ...readCatalog()]);
+    collection.write([customer, ...collection.read()]);
     return customer;
   },
 

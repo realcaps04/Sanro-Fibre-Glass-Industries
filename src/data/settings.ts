@@ -18,7 +18,7 @@ export const defaultSettings: AppSettings = {
   },
   invoice: {
     prefix: "INV-",
-    nextNumber: 1046,
+    nextNumber: 1,
     taxRate: 0.18,
     defaultNotes: "Thank you for your business.",
     enabledPaymentMethods: ["cash", "upi", "bank", "credit"],
@@ -26,5 +26,5 @@ export const defaultSettings: AppSettings = {
   appearance: {
     theme: "light",
   },
-  openingCash: 32500,
+  openingCash: 0,
 };

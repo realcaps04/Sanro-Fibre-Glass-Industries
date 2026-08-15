@@ -1,4 +1,5 @@
 import { defaultSettings } from "@/data/settings";
+import { mapConvexProduct } from "@/lib/productMap";
 import { storage } from "@/lib/storage";
 import {
   customerOutstanding,
@@ -23,6 +24,8 @@ import type {
   RecordPaymentInput,
   Transaction,
 } from "@/types";
+import { api } from "../../convex/_generated/api";
+import { useQuery } from "convex/react";
 import {
   createContext,
   useCallback,
@@ -64,11 +67,15 @@ function applyTheme() {
 }
 
 export function DataProvider({ children }: { children: ReactNode }) {
+  const remoteProducts = useQuery(api.products.list);
+  const products = useMemo(
+    () => (remoteProducts ?? []).map(mapConvexProduct),
+    [remoteProducts],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
@@ -84,18 +91,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     try {
       setError(null);
-      const [nextInvoices, nextCustomers, nextProducts, nextTransactions, nextExpenses, nextSettings] =
+      const [nextInvoices, nextCustomers, nextTransactions, nextExpenses, nextSettings] =
         await Promise.all([
           invoiceService.getInvoices(),
           customerService.getCustomers(),
-          productService.getProducts(),
           transactionService.getTransactions(),
           expenseService.getExpenses(),
           settingsService.getSettings(),
         ]);
       setInvoices(nextInvoices);
       setCustomers(nextCustomers);
-      setProducts(nextProducts);
       setTransactions(nextTransactions);
       setExpenses(nextExpenses);
       setSettings(nextSettings);
@@ -277,7 +282,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<DataContextValue>(
     () => ({
-      loading,
+      loading: loading || remoteProducts === undefined,
       error,
       invoices,
       customers,
@@ -316,6 +321,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       products,
       recordPayment,
       refresh,
+      remoteProducts,
       setSidebarCollapsed,
       settings,
       sidebarCollapsed,

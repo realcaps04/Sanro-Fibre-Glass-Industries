@@ -1,55 +1,21 @@
-import { dummyCustomerIds } from "@/data/customers";
-import {
-  dummyInvoiceIds,
-  fromCreateInput,
-  mockInvoices,
-  nextInvoiceNumber,
-} from "@/data/invoices";
+import { fromCreateInput, nextInvoiceNumber } from "@/data/invoices";
 import { calculateBill, statusFromBalances } from "@/lib/calculations";
 import { createId, matchesQuery } from "@/lib/search";
 import { createCollection } from "@/services/collection";
 import { settingsService } from "@/services/settingsService";
 import type { CreateInvoiceInput, Invoice, InvoiceStatus } from "@/types";
 
-const collection = createCollection("invoices", mockInvoices);
-
-function normalizeInvoice(invoice: Invoice): Invoice {
-  if (!dummyCustomerIds.includes(invoice.customerId)) return invoice;
-  return {
-    ...invoice,
-    customerId: "cus_edison",
-    customerName: "Edison Biju",
-  };
-}
-
-function readInvoices(): Invoice[] {
-  const stored = collection.read().map(normalizeInvoice);
-  const withoutDummy = stored.filter((invoice) => !dummyInvoiceIds.includes(invoice.id));
-  const missingSeeds = mockInvoices.filter(
-    (seed) => !withoutDummy.some((invoice) => invoice.id === seed.id),
-  );
-  const next = [...missingSeeds, ...withoutDummy];
-  const changed =
-    next.length !== stored.length ||
-    next.some(
-      (invoice, index) =>
-        invoice.id !== stored[index]?.id || invoice.customerId !== stored[index]?.customerId,
-    );
-  if (changed) {
-    collection.write(next);
-  }
-  return next;
-}
+const collection = createCollection<Invoice>("invoices", []);
 
 export const invoiceService = {
   async getInvoices(): Promise<Invoice[]> {
-    return [...readInvoices()].sort(
+    return [...collection.read()].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
   },
 
   async getInvoiceById(id: string): Promise<Invoice | undefined> {
-    return readInvoices().find((invoice) => invoice.id === id);
+    return collection.read().find((invoice) => invoice.id === id);
   },
 
   async searchInvoices(query: string, status?: InvoiceStatus | "all"): Promise<Invoice[]> {

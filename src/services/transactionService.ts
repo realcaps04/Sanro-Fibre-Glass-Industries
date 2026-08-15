@@ -1,6 +1,4 @@
-import { dummyExpenseIds } from "@/data/expenses";
-import { dummyInvoiceIds, seedInvoiceIds } from "@/data/invoices";
-import { dummyTransactionIds, expenseTx, saleFromInvoice } from "@/data/transactions";
+import { expenseTx, saleFromInvoice } from "@/data/transactions";
 import { createId, matchesQuery } from "@/lib/search";
 import { createCollection } from "@/services/collection";
 import type {
@@ -13,26 +11,6 @@ import type {
 } from "@/types";
 
 const collection = createCollection<Transaction>("transactions", []);
-
-function isDummyTransaction(tx: Transaction): boolean {
-  if (dummyTransactionIds.includes(tx.id)) return true;
-  if (tx.invoiceId && dummyInvoiceIds.includes(tx.invoiceId)) return true;
-  if (tx.expenseId && dummyExpenseIds.includes(tx.expenseId)) return true;
-  if (tx.id.startsWith("txn_sale_inv_") || tx.id.startsWith("txn_pay_inv_")) {
-    const invoiceId = tx.invoiceId ?? tx.id.replace(/^txn_(?:sale|pay)_/, "");
-    if (invoiceId && seedInvoiceIds.includes(invoiceId)) return true;
-  }
-  return false;
-}
-
-function readTransactions(): Transaction[] {
-  const stored = collection.read();
-  const next = stored.filter((tx) => !isDummyTransaction(tx));
-  if (next.length !== stored.length) {
-    collection.write(next);
-  }
-  return next;
-}
 
 export interface TransactionFilters {
   query?: string;
@@ -48,7 +26,7 @@ export interface TransactionFilters {
 
 export const transactionService = {
   async getTransactions(): Promise<Transaction[]> {
-    return [...readTransactions()].sort(
+    return [...collection.read()].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
   },

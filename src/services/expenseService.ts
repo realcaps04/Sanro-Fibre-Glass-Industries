@@ -1,28 +1,18 @@
-import { dummyExpenseIds, mockExpenses } from "@/data/expenses";
 import { createId, matchesQuery } from "@/lib/search";
 import { createCollection } from "@/services/collection";
 import type { CreateExpenseInput, Expense } from "@/types";
 
-const collection = createCollection<Expense>("expenses", mockExpenses);
-
-function readExpenses(): Expense[] {
-  const stored = collection.read();
-  const next = stored.filter((expense) => !dummyExpenseIds.includes(expense.id));
-  if (next.length !== stored.length) {
-    collection.write(next);
-  }
-  return next;
-}
+const collection = createCollection<Expense>("expenses", []);
 
 export const expenseService = {
   async getExpenses(): Promise<Expense[]> {
-    return [...readExpenses()].sort(
+    return [...collection.read()].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
   },
 
   async getExpenseById(id: string): Promise<Expense | undefined> {
-    return readExpenses().find((expense) => expense.id === id);
+    return collection.read().find((expense) => expense.id === id);
   },
 
   async searchExpenses(query: string): Promise<Expense[]> {

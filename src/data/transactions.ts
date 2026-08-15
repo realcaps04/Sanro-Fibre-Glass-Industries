@@ -17,24 +17,6 @@ function saleFromInvoice(invoice: Invoice): Transaction {
   };
 }
 
-function paymentFromInvoice(invoice: Invoice): Transaction | null {
-  if (invoice.amountPaid <= 0 || invoice.status === "cancelled") return null;
-  return {
-    id: `txn_pay_${invoice.id}`,
-    type: "payment",
-    reference: invoice.number,
-    party: invoice.customerName,
-    amount: invoice.amountPaid,
-    direction: "in",
-    status: invoice.status === "partial" ? "partial" : "paid",
-    paymentMethod: invoice.paymentMethod === "credit" ? "cash" : invoice.paymentMethod,
-    date: invoice.date,
-    invoiceId: invoice.id,
-    customerId: invoice.customerId,
-    description: `Payment for ${invoice.number}`,
-  };
-}
-
 function expenseTx(expense: Expense): Transaction {
   return {
     id: `txn_${expense.id}`,
@@ -51,20 +33,4 @@ function expenseTx(expense: Expense): Transaction {
   };
 }
 
-export const dummyTransactionIds = [
-  "txn_sale_inv_1045",
-  "txn_sale_inv_1046",
-  "txn_pay_inv_1045",
-  "txn_pay_inv_1046",
-  "txn_exp_transport",
-  "txn_exp_power",
-  "txn_exp_materials",
-  "txn_exp_wages",
-  "txn_exp_rent",
-  "txn_exp_fuel",
-  "txn_exp_maint",
-];
-
-export const mockTransactions: Transaction[] = [];
-
-export { saleFromInvoice, paymentFromInvoice, expenseTx };
+export { saleFromInvoice, expenseTx };
