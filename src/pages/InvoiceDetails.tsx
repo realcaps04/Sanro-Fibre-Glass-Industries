@@ -12,6 +12,15 @@ import { Download, LoaderCircle, Pencil, Printer, Share2 } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 
+function isAbortError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "name" in error &&
+    (error as { name: string }).name === "AbortError"
+  );
+}
+
 export default function InvoiceDetails() {
   const { id } = useParams();
   const { invoices, customers, products, settings } = useData();
@@ -60,24 +69,19 @@ export default function InvoiceDetails() {
           await navigator.share({
             files: [file],
             title: `Invoice ${invoice.number}`,
-            text: caption,
           });
         } catch (error) {
-          if (!(error instanceof DOMException && error.name === "AbortError")) throw error;
-          downloadPdfFile(file);
+          if (!isAbortError(error)) {
+            downloadPdfFile(file);
+          }
         }
       } else {
         downloadPdfFile(file);
-        toast("PDF downloaded. Attach the PDF in WhatsApp.", "success");
       }
       openWhatsAppChat(customer.phone, caption, chatWindow);
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") {
-        openWhatsAppChat(customer.phone, caption, chatWindow);
-        return;
-      }
-      chatWindow?.close();
-      toast("Unable to share PDF", "danger");
+    } catch {
+      openWhatsAppChat(customer.phone, caption, chatWindow);
+      toast("PDF could not be created. WhatsApp is opening anyway.", "danger");
     } finally {
       setSharing(false);
     }

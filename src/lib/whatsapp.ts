@@ -16,12 +16,20 @@ export function whatsappChatUrl(phone: string, text = ""): string | null {
 }
 
 export function openWhatsAppChat(phone: string, text = "", target?: Window | null) {
+  const number = toWhatsAppNumber(phone);
   const url = whatsappChatUrl(phone, text);
-  if (!url) return false;
+  if (!number || !url) return false;
+  const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const dest = mobile
+    ? `whatsapp://send?phone=${number}${text ? `&text=${encodeURIComponent(text)}` : ""}`
+    : url;
   if (target && !target.closed) {
-    target.location.href = url;
+    target.location.href = dest;
     return true;
   }
-  window.open(url, "_blank", "noopener,noreferrer");
+  const opened = window.open(dest, "_blank");
+  if (!opened) {
+    window.location.href = dest;
+  }
   return true;
 }

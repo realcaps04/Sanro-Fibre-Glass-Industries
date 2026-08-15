@@ -22,7 +22,7 @@ function stampLabel(status: InvoiceStatus) {
   if (status === "paid") return "PAID";
   if (status === "cancelled") return "CANCELLED";
   if (status === "partial") return "PARTIAL";
-  return "UNPAID";
+  return null;
 }
 
 function stampTone(status: InvoiceStatus) {
@@ -32,8 +32,10 @@ function stampTone(status: InvoiceStatus) {
 }
 
 function statusText(status: InvoiceStatus) {
-  const stamp = stampLabel(status);
-  return stamp[0] + stamp.slice(1).toLowerCase();
+  if (status === "paid") return "Paid";
+  if (status === "cancelled") return "Cancelled";
+  if (status === "partial") return "Partial";
+  return "Unpaid";
 }
 
 const cell = { borderColor: line, borderWidth: 1, borderStyle: "solid" as const };
@@ -231,14 +233,16 @@ export function InvoicePreview({ invoice, settings, customer }: InvoicePreviewPr
           </table>
 
           <div className="relative">
-            <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center" aria-hidden>
-              <div
-                className="flex h-[148px] w-[148px] rotate-[-22deg] items-center justify-center rounded-full border-[6px] text-[22px] font-black tracking-[0.18em]"
-                style={{ borderColor: `${tone}55`, color: `${tone}59` }}
-              >
-                {stamp}
+            {stamp ? (
+              <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center" aria-hidden>
+                <div
+                  className="flex h-[148px] w-[148px] rotate-[-22deg] items-center justify-center rounded-full border-[6px] text-[22px] font-black tracking-[0.18em]"
+                  style={{ borderColor: `${tone}55`, color: `${tone}59` }}
+                >
+                  {stamp}
+                </div>
               </div>
-            </div>
+            ) : null}
 
             <table className="relative w-full border-collapse text-[11px]">
               <thead>
