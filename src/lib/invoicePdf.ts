@@ -73,7 +73,29 @@ function canvasToPdf(canvas: HTMLCanvasElement) {
   return pdf;
 }
 
-export async function downloadInvoicePdf(element: HTMLElement, filename: string) {
+export async function createInvoicePdfFile(element: HTMLElement, filename: string) {
   const pdf = canvasToPdf(await invoiceCanvas(element));
-  pdf.save(filename);
+  return new File([pdf.output("blob")], filename, { type: "application/pdf" });
+}
+
+export function canSharePdfFile(file: File) {
+  try {
+    return typeof navigator.canShare === "function" && navigator.canShare({ files: [file] });
+  } catch {
+    return false;
+  }
+}
+
+export async function downloadInvoicePdf(element: HTMLElement, filename: string) {
+  const file = await createInvoicePdfFile(element, filename);
+  downloadPdfFile(file);
+}
+
+export function downloadPdfFile(file: File) {
+  const url = URL.createObjectURL(file);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = file.name;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
