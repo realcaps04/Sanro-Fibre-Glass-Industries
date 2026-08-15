@@ -85,8 +85,11 @@ export function ProductForm({ open, onClose }: ProductFormProps) {
       });
       toast("Product added", "success");
       onClose();
-    } catch {
-      toast("Unable to add product", "danger");
+    } catch (error) {
+      toast(
+        error instanceof Error ? error.message : "Unable to add product",
+        "danger",
+      );
     } finally {
       setSubmitting(false);
     }

@@ -3,13 +3,17 @@ import { NewBillSheet } from "@/components/billing/NewBillSheet";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { PageSkeleton } from "@/components/ui/Skeleton";
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
 import { inferBillKind } from "@/lib/billing";
 import { formatInvoiceAmount } from "@/lib/currency";
 import { invoiceWhatsAppMessage } from "@/lib/invoiceLink";
 import { createInvoicePdfFile, downloadInvoicePdf, downloadPdfFile } from "@/lib/invoicePdf";
+import { mapConvexBill } from "@/services/invoiceService";
 import { openWhatsAppChat } from "@/lib/whatsapp";
+import { api } from "../../convex/_generated/api";
+import { useQuery } from "convex/react";
 import { Download, LoaderCircle, Pencil, Printer, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -18,11 +22,14 @@ export default function InvoiceDetails() {
   const { id } = useParams();
   const { invoices, customers, products, settings } = useData();
   const { toast } = useToast();
+  const remoteBill = useQuery(api.billActions.get, id ? { id } : "skip");
   const [downloading, setDownloading] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const invoice = invoices.find((item) => item.id === id);
+  const invoice =
+    invoices.find((item) => item.id === id) ??
+    (remoteBill ? mapConvexBill(remoteBill) : undefined);
   const customer = customers.find((item) => item.id === invoice?.customerId);
   const filename = invoice ? `${invoice.number.replace(/\s+/g, "-")}.pdf` : "invoice.pdf";
   const listPath = invoice
@@ -59,6 +66,9 @@ export default function InvoiceDetails() {
   }, [filename, invoice, invoice?.amountPaid, invoice?.grandTotal, invoice?.id, invoice?.items, invoice?.notes]);
 
   if (!invoice) {
+    if (id && remoteBill === undefined) {
+      return <PageSkeleton />;
+    }
     return (
       <ErrorState
         title="Unable to load invoice"

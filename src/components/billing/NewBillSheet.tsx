@@ -159,8 +159,15 @@ export function NewBillSheet({
       toast(existing ? "Invoice updated" : "Invoice created successfully", "success");
       onClose();
       onCreated?.(invoice.id);
-    } catch {
-      toast(existing ? "Unable to update invoice" : "Unable to create invoice", "danger");
+    } catch (error) {
+      toast(
+        existing
+          ? "Unable to update invoice"
+          : error instanceof Error
+            ? error.message
+            : "Unable to create invoice",
+        "danger",
+      );
     } finally {
       setGenerating(false);
     }

@@ -1,21 +1,110 @@
-import { fromCreateInput, nextInvoiceNumber } from "@/data/invoices";
-import { calculateBill, statusFromBalances } from "@/lib/calculations";
-import { createId, matchesQuery } from "@/lib/search";
-import { createCollection } from "@/services/collection";
+import { api } from "../../convex/_generated/api";
+import { convex } from "@/lib/convex";
+import { matchesQuery } from "@/lib/search";
 import { settingsService } from "@/services/settingsService";
-import type { CreateInvoiceInput, Invoice, InvoiceStatus } from "@/types";
+import type {
+  CreateInvoiceInput,
+  Invoice,
+  InvoiceLineItem,
+  InvoiceStatus,
+  PaymentMethod,
+} from "@/types";
 
-const collection = createCollection<Invoice>("invoices", []);
+export interface ConvexBillRow {
+  _id: string;
+  number: string;
+  customerId: string;
+  customerName: string;
+  date: string;
+  items: InvoiceLineItem[];
+  subtotal: number;
+  discount: number;
+  taxableAmount?: number;
+  taxRate: number;
+  tax: number;
+  cgst?: number;
+  sgst?: number;
+  grandTotal: number;
+  amountPaid: number;
+  balance: number;
+  paymentMethod: PaymentMethod;
+  status: InvoiceStatus;
+  notes?: string;
+  billKind?: Invoice["billKind"];
+  createdAt: string;
+}
+
+export function mapConvexBill(row: ConvexBillRow): Invoice {
+  return {
+    id: row._id,
+    number: row.number,
+    customerId: row.customerId,
+    customerName: row.customerName,
+    date: row.date,
+    items: row.items,
+    subtotal: row.subtotal,
+    discount: row.discount,
+    taxableAmount: row.taxableAmount,
+    taxRate: row.taxRate,
+    tax: row.tax,
+    cgst: row.cgst,
+    sgst: row.sgst,
+    grandTotal: row.grandTotal,
+    amountPaid: row.amountPaid,
+    balance: row.balance,
+    paymentMethod: row.paymentMethod,
+    status: row.status,
+    notes: row.notes,
+    billKind: row.billKind,
+    createdAt: row.createdAt,
+  };
+}
+
+function lineItems(items: InvoiceLineItem[]) {
+  return items.map((item) => ({
+    productId: item.productId,
+    name: item.name,
+    sku: item.sku,
+    quantity: item.quantity,
+    rate: item.rate,
+    amount: item.quantity * item.rate,
+    hsnCode: item.hsnCode,
+    gstRate: item.gstRate,
+    taxableAmount: item.taxableAmount,
+    tax: item.tax,
+  }));
+}
+
+function billArgs(input: CreateInvoiceInput, prefix: string) {
+  return {
+    customerId: input.customerId,
+    customerName: input.customerName,
+    items: lineItems(input.items),
+    discount: input.discount,
+    taxRate: input.taxRate,
+    amountPaid: input.amountPaid,
+    paymentMethod: input.paymentMethod,
+    notes: input.notes?.trim() || undefined,
+    date: input.date ?? new Date().toISOString().slice(0, 10),
+    billKind: input.billKind,
+    prefix,
+  };
+}
 
 export const invoiceService = {
   async getInvoices(): Promise<Invoice[]> {
-    return [...collection.read()].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-    );
+    const [doors, nonGst] = await Promise.all([
+      convex.query(api.doorBills.list),
+      convex.query(api.nonGstBills.list),
+    ]);
+    return [...doors, ...nonGst]
+      .map(mapConvexBill)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   },
 
   async getInvoiceById(id: string): Promise<Invoice | undefined> {
-    return collection.read().find((invoice) => invoice.id === id);
+    const invoices = await this.getInvoices();
+    return invoices.find((invoice) => invoice.id === id);
   },
 
   async searchInvoices(query: string, status?: InvoiceStatus | "all"): Promise<Invoice[]> {
@@ -31,78 +120,47 @@ export const invoiceService = {
 
   async createInvoice(input: CreateInvoiceInput): Promise<Invoice> {
     const settings = await settingsService.getSettings();
-    const existing = collection.read();
-    const number = nextInvoiceNumber(settings.invoice.prefix, existing);
-    const invoice = fromCreateInput(createId("inv"), number, {
-      ...input,
-      taxRate: input.taxRate ?? settings.invoice.taxRate,
-    });
-    collection.write([invoice, ...existing]);
+    const payload = billArgs(
+      { ...input, taxRate: input.taxRate ?? settings.invoice.taxRate },
+      settings.invoice.prefix,
+    );
+    const row =
+      payload.taxRate === 0
+        ? await convex.mutation(api.nonGstBills.create, payload)
+        : await convex.mutation(api.doorBills.create, payload);
+    if (!row) throw new Error("Unable to create invoice");
     await settingsService.updateSettings({
       invoice: { ...settings.invoice, nextNumber: settings.invoice.nextNumber + 1 },
     });
-    return invoice;
+    return mapConvexBill(row);
   },
 
   async updateInvoice(id: string, input: CreateInvoiceInput): Promise<Invoice> {
-    const current = collection.read();
-    const index = current.findIndex((invoice) => invoice.id === id);
-    if (index === -1) {
-      throw new Error("Invoice not found");
-    }
-    const previous = current[index];
-    const updated = {
-      ...fromCreateInput(previous.id, previous.number, {
-        ...input,
-        date: previous.date,
-        taxRate: input.taxRate ?? previous.taxRate,
-      }),
-      createdAt: previous.createdAt,
-    };
-    const next = [...current];
-    next[index] = updated;
-    collection.write(next);
-    return updated;
+    const settings = await settingsService.getSettings();
+    const row = await convex.mutation(api.billActions.update, {
+      id,
+      ...billArgs(input, settings.invoice.prefix),
+    });
+    if (!row) throw new Error("Invoice not found");
+    return mapConvexBill(row);
   },
 
   async applyPayment(invoiceId: string, amount: number): Promise<Invoice> {
-    const current = collection.read();
-    const index = current.findIndex((invoice) => invoice.id === invoiceId);
-    if (index === -1) {
-      throw new Error("Invoice not found");
-    }
-    const invoice = current[index];
-    const amountPaid = Math.min(invoice.grandTotal, invoice.amountPaid + amount);
-    const totals = calculateBill({
-      items: invoice.items,
-      discount: invoice.discount,
-      taxRate: invoice.taxRate,
-      amountPaid,
+    const row = await convex.mutation(api.billActions.applyPayment, {
+      id: invoiceId,
+      amount,
     });
-    const updated: Invoice = {
-      ...invoice,
-      ...totals,
-      status: statusFromBalances(totals.amountPaid, totals.grandTotal),
-      paymentMethod: invoice.paymentMethod === "credit" && amountPaid > 0
-        ? invoice.paymentMethod
-        : invoice.paymentMethod,
-    };
-    const next = [...current];
-    next[index] = updated;
-    collection.write(next);
-    return updated;
+    if (!row) throw new Error("Invoice not found");
+    return mapConvexBill(row);
   },
 
   async cancelInvoice(invoiceId: string): Promise<Invoice> {
-    const current = collection.read();
-    const index = current.findIndex((invoice) => invoice.id === invoiceId);
-    if (index === -1) {
-      throw new Error("Invoice not found");
-    }
-    const updated: Invoice = { ...current[index], status: "cancelled" };
-    const next = [...current];
-    next[index] = updated;
-    collection.write(next);
-    return updated;
+    const row = await convex.mutation(api.billActions.cancel, { id: invoiceId });
+    if (!row) throw new Error("Invoice not found");
+    return mapConvexBill(row);
+  },
+
+  async deleteInvoice(invoiceId: string): Promise<void> {
+    await convex.mutation(api.billActions.remove, { id: invoiceId });
   },
 };

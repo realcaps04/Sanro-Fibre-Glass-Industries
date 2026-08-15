@@ -133,7 +133,7 @@ export default function Billing({
           </button>
         ))}
       </div>
-      <InvoiceList invoices={visible} />
+      <InvoiceList invoices={visible} allowDelete={kind === "doors"} />
       <NewBillFlow
         open={billOpen}
         onClose={() => setBillOpen(false)}

@@ -1,6 +1,7 @@
 import { defaultSettings } from "@/data/settings";
 import { mapConvexProduct } from "@/lib/productMap";
 import { mapConvexCustomer } from "@/services/customerService";
+import { mapConvexBill } from "@/services/invoiceService";
 import { storage } from "@/lib/storage";
 import {
   customerOutstanding,
@@ -57,6 +58,7 @@ interface DataContextValue {
   addExpense: (input: CreateExpenseInput) => Promise<Expense>;
   updateSettings: (patch: Partial<AppSettings>) => Promise<void>;
   cancelInvoice: (invoiceId: string) => Promise<void>;
+  deleteInvoice: (invoiceId: string) => Promise<void>;
   getCustomerOutstanding: (customerId: string) => number;
   getCustomerPurchases: (customerId: string) => number;
 }
@@ -78,9 +80,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
     () => (remoteCustomers ?? []).map(mapConvexCustomer),
     [remoteCustomers],
   );
+  const remoteDoorBills = useQuery(api.doorBills.list);
+  const remoteNonGstBills = useQuery(api.nonGstBills.list);
+  const invoices = useMemo(
+    () =>
+      [...(remoteDoorBills ?? []), ...(remoteNonGstBills ?? [])]
+        .map(mapConvexBill)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+    [remoteDoorBills, remoteNonGstBills],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
@@ -96,14 +106,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     try {
       setError(null);
-      const [nextInvoices, nextTransactions, nextExpenses, nextSettings] =
-        await Promise.all([
-          invoiceService.getInvoices(),
-          transactionService.getTransactions(),
-          expenseService.getExpenses(),
-          settingsService.getSettings(),
-        ]);
-      setInvoices(nextInvoices);
+      const [nextTransactions, nextExpenses, nextSettings] = await Promise.all([
+        transactionService.getTransactions(),
+        expenseService.getExpenses(),
+        settingsService.getSettings(),
+      ]);
       setTransactions(nextTransactions);
       setExpenses(nextExpenses);
       setSettings(nextSettings);
@@ -137,10 +144,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (invoice.amountPaid > 0 && invoice.paymentMethod !== "credit") {
         await adjustCash(invoice.amountPaid);
       }
-      await refresh();
       return invoice;
     },
-    [adjustCash, refresh],
+    [adjustCash],
   );
 
   const updateInvoice = useCallback(
@@ -227,14 +233,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return customerService.createCustomer(input);
   }, []);
 
-  const addProduct = useCallback(
-    async (input: Omit<Product, "id">) => {
-      const product = await productService.createProduct(input);
-      await refresh();
-      return product;
-    },
-    [refresh],
-  );
+  const addProduct = useCallback(async (input: Omit<Product, "id">) => {
+    return productService.createProduct(input);
+  }, []);
 
   const addExpense = useCallback(
     async (input: CreateExpenseInput) => {
@@ -268,6 +269,25 @@ export function DataProvider({ children }: { children: ReactNode }) {
     [refresh],
   );
 
+  const deleteInvoice = useCallback(
+    async (invoiceId: string) => {
+      const invoice =
+        invoices.find((item) => item.id === invoiceId) ??
+        (await invoiceService.getInvoiceById(invoiceId));
+      if (!invoice) throw new Error("Invoice not found");
+      await invoiceService.deleteInvoice(invoiceId);
+      await transactionService.markInvoiceCancelled(invoiceId);
+      await Promise.all(
+        invoice.items.map((item) => productService.adjustStock(item.productId, item.quantity)),
+      );
+      if (invoice.amountPaid > 0 && invoice.paymentMethod !== "credit") {
+        await adjustCash(-invoice.amountPaid);
+      }
+      await refresh();
+    },
+    [adjustCash, invoices, refresh],
+  );
+
   const getCustomerOutstanding = useCallback(
     (customerId: string) => customerOutstanding(customerId, invoices),
     [invoices],
@@ -299,6 +319,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       addExpense,
       updateSettings,
       cancelInvoice,
+      deleteInvoice,
       getCustomerOutstanding,
       getCustomerPurchases,
     }),
@@ -307,6 +328,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       addExpense,
       addProduct,
       cancelInvoice,
+      deleteInvoice,
       createInvoice,
       updateInvoice,
       customers,

@@ -41,7 +41,17 @@ export const productService = {
 
   async createProduct(input: Omit<Product, "id">): Promise<Product> {
     const payload = normalizeInput(input);
-    const row = await convex.mutation(api.products.create, payload);
+    const row = await convex.mutation(api.products.create, {
+      name: payload.name,
+      sku: payload.sku,
+      category: payload.category,
+      price: payload.price,
+      stock: payload.stock,
+      unit: payload.unit,
+      description: payload.description,
+      hsnCode: payload.hsnCode,
+      gstRate: payload.gstRate,
+    });
     if (!row) {
       throw new Error("Unable to create product");
     }
