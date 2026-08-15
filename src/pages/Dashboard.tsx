@@ -10,12 +10,13 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { useData } from "@/context/DataContext";
 import { formatCurrency } from "@/lib/currency";
 import { greeting } from "@/lib/dates";
-import { ArrowDownLeft, ArrowUpRight, Bell, Ellipsis } from "lucide-react";
+import { activeInvoices } from "@/lib/stats";
+import { Bell, Ellipsis, FilePlus2, Files } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
-  const { loading, error, refresh, invoices, products, settings } = useData();
+  const { loading, error, refresh, invoices, products } = useData();
   const navigate = useNavigate();
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [expenseOpen, setExpenseOpen] = useState(false);
@@ -32,6 +33,10 @@ export default function Dashboard() {
   }, [invoices, products]);
 
   const hasAlerts = alerts.pending.length + alerts.lowStock.length > 0;
+  const totalSales = useMemo(
+    () => activeInvoices(invoices).reduce((sum, invoice) => sum + invoice.grandTotal, 0),
+    [invoices],
+  );
 
   if (loading) return <DashboardSkeleton />;
   if (error) return <ErrorState title={error} onRetry={() => void refresh()} />;

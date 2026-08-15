@@ -181,58 +181,37 @@ h3 {
     0 8px 18px rgb(0 0 0 / 0.14);
 }
 
-.nav-active-glow {
-  background: radial-gradient(circle, rgb(214 255 74 / 0.45) 0%, rgb(214 255 74 / 0.08) 55%, transparent 70%);
-}
-
 .nav-indicator {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 380ms cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
 }
 
 .nav-indicator::after {
   content: "";
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 999px;
-  background: radial-gradient(
-    circle,
-    rgb(214 255 74 / 0.42) 0%,
-    rgb(214 255 74 / 0.12) 48%,
-    transparent 72%
-  );
-  box-shadow: 0 0 18px rgb(214 255 74 / 0.18);
+  background: rgb(255 255 255 / 0.14);
 }
 
 .nav-link {
   color: inherit;
-  transition: color 240ms ease;
+  transition: color 200ms ease;
 }
 
 .nav-icon {
+  color: inherit;
+  stroke: currentColor;
   transition:
-    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
-    color 240ms ease;
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 200ms ease;
 }
 
 .nav-icon-active {
-  transform: scale(1.08);
-  animation: nav-icon-pop 380ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@keyframes nav-icon-pop {
-  0% {
-    transform: scale(0.9);
-  }
-  55% {
-    transform: scale(1.12);
-  }
-  100% {
-    transform: scale(1.08);
-  }
+  transform: scale(1.06);
 }
 
 .progress-lime {
@@ -250,10 +229,8 @@ h3 {
 }
 
 .nav-gradient {
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.1), transparent 34%),
-    linear-gradient(165deg, #0b5c4d 0%, #003f34 55%, #002922 100%);
-  box-shadow: var(--shadow-nav);
+  background: linear-gradient(180deg, #0b5c4d 0%, #003f34 62%, #002922 100%);
+  box-shadow: 0 10px 24px rgb(0 63 52 / 0.28);
 }
 
 .elevated {
