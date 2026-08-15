@@ -1,3 +1,4 @@
+import { dummyInvoiceIds } from "@/data/invoices";
 import { expenseTx, mockTransactions, saleFromInvoice } from "@/data/transactions";
 import { createId, matchesQuery } from "@/lib/search";
 import { createCollection } from "@/services/collection";
@@ -11,6 +12,23 @@ import type {
 } from "@/types";
 
 const collection = createCollection("transactions", mockTransactions);
+
+function readTransactions(): Transaction[] {
+  const stored = collection.read();
+  const withoutDummy = stored.filter(
+    (tx) => !tx.invoiceId || !dummyInvoiceIds.includes(tx.invoiceId),
+  );
+  const missingSeeds = mockTransactions.filter(
+    (seed) =>
+      seed.invoiceId &&
+      !withoutDummy.some((tx) => tx.invoiceId === seed.invoiceId && tx.type === seed.type),
+  );
+  const next = [...missingSeeds, ...withoutDummy];
+  if (next.length !== stored.length || missingSeeds.length) {
+    collection.write(next);
+  }
+  return next;
+}
 
 export interface TransactionFilters {
   query?: string;
@@ -26,7 +44,7 @@ export interface TransactionFilters {
 
 export const transactionService = {
   async getTransactions(): Promise<Transaction[]> {
-    return [...collection.read()].sort(
+    return [...readTransactions()].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
   },

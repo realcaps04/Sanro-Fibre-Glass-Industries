@@ -1,5 +1,10 @@
 import { dummyCustomerIds } from "@/data/customers";
-import { fromCreateInput, mockInvoices, nextInvoiceNumber } from "@/data/invoices";
+import {
+  dummyInvoiceIds,
+  fromCreateInput,
+  mockInvoices,
+  nextInvoiceNumber,
+} from "@/data/invoices";
 import { calculateBill, statusFromBalances } from "@/lib/calculations";
 import { createId, matchesQuery } from "@/lib/search";
 import { createCollection } from "@/services/collection";
@@ -18,9 +23,19 @@ function normalizeInvoice(invoice: Invoice): Invoice {
 }
 
 function readInvoices(): Invoice[] {
-  const stored = collection.read();
-  const next = stored.map(normalizeInvoice);
-  if (next.some((invoice, index) => invoice.customerId !== stored[index].customerId)) {
+  const stored = collection.read().map(normalizeInvoice);
+  const withoutDummy = stored.filter((invoice) => !dummyInvoiceIds.includes(invoice.id));
+  const missingSeeds = mockInvoices.filter(
+    (seed) => !withoutDummy.some((invoice) => invoice.id === seed.id),
+  );
+  const next = [...missingSeeds, ...withoutDummy];
+  const changed =
+    next.length !== stored.length ||
+    next.some(
+      (invoice, index) =>
+        invoice.id !== stored[index]?.id || invoice.customerId !== stored[index]?.customerId,
+    );
+  if (changed) {
     collection.write(next);
   }
   return next;
