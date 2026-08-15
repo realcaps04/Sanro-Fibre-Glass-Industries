@@ -72,9 +72,9 @@ export default function Dashboard() {
         </header>
 
         <div className="mt-6">
-          <p className="text-[13px] leading-none text-white/70">Total Balance</p>
+          <p className="text-[13px] leading-none text-white/70">Total Sales</p>
           <div className="mt-2 flex items-end justify-between gap-3">
-            <p className="display-number text-white">{formatCurrency(settings.openingCash)}</p>
+            <p className="display-number text-white">{formatCurrency(totalSales)}</p>
             <span className="mb-0.5 rounded-full bg-white/12 px-3 py-1 text-[11px] font-semibold tracking-[0.08em] text-white/90 backdrop-blur-md">
               INR
             </span>
@@ -85,18 +85,18 @@ export default function Dashboard() {
           <button
             type="button"
             className="btn-glass flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-sm font-semibold"
-            onClick={() => setPaymentOpen(true)}
+            onClick={() => navigate("/billing/new")}
           >
-            <ArrowDownLeft className="h-4 w-4" />
-            Request
+            <FilePlus2 className="h-4 w-4" />
+            New Bill
           </button>
           <button
             type="button"
             className="btn-lime flex h-12 flex-[1.15] items-center justify-center gap-2 rounded-full text-sm font-semibold"
-            onClick={() => navigate("/billing/new")}
+            onClick={() => navigate("/billing")}
           >
-            Transfer
-            <ArrowUpRight className="h-4 w-4" />
+            My Bills
+            <Files className="h-4 w-4" />
           </button>
           <button
             type="button"
