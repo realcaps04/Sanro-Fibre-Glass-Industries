@@ -1,5 +1,6 @@
 import { defaultSettings } from "@/data/settings";
 import { mapConvexProduct } from "@/lib/productMap";
+import { mapConvexCustomer } from "@/services/customerService";
 import { storage } from "@/lib/storage";
 import {
   customerOutstanding,
@@ -72,10 +73,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     () => (remoteProducts ?? []).map(mapConvexProduct),
     [remoteProducts],
   );
+  const remoteCustomers = useQuery(api.customers.list);
+  const customers = useMemo(
+    () => (remoteCustomers ?? []).map(mapConvexCustomer),
+    [remoteCustomers],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
@@ -91,16 +96,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     try {
       setError(null);
-      const [nextInvoices, nextCustomers, nextTransactions, nextExpenses, nextSettings] =
+      const [nextInvoices, nextTransactions, nextExpenses, nextSettings] =
         await Promise.all([
           invoiceService.getInvoices(),
-          customerService.getCustomers(),
           transactionService.getTransactions(),
           expenseService.getExpenses(),
           settingsService.getSettings(),
         ]);
       setInvoices(nextInvoices);
-      setCustomers(nextCustomers);
       setTransactions(nextTransactions);
       setExpenses(nextExpenses);
       setSettings(nextSettings);
@@ -220,14 +223,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     [adjustCash, customers, invoices, refresh],
   );
 
-  const addCustomer = useCallback(
-    async (input: Omit<Customer, "id" | "createdAt">) => {
-      const customer = await customerService.createCustomer(input);
-      await refresh();
-      return customer;
-    },
-    [refresh],
-  );
+  const addCustomer = useCallback(async (input: Omit<Customer, "id" | "createdAt">) => {
+    return customerService.createCustomer(input);
+  }, []);
 
   const addProduct = useCallback(
     async (input: Omit<Product, "id">) => {

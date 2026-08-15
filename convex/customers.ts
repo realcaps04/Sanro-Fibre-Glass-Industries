@@ -22,13 +22,13 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     const id = await ctx.db.insert("Customers", {
-      ...args,
       name: args.name.trim(),
       phone: args.phone.trim(),
       email: args.email?.trim() || undefined,
       houseName: args.houseName?.trim() || undefined,
       place: args.place?.trim() || undefined,
       pincode: args.pincode?.trim() || undefined,
+      address: args.address.trim(),
       gstin: args.gstin?.trim() || undefined,
       createdAt: new Date().toISOString(),
     });

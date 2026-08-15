@@ -1,20 +1,55 @@
-import { createId, matchesQuery } from "@/lib/search";
-import { createCollection } from "@/services/collection";
+import { api } from "../../convex/_generated/api";
+import { convex } from "@/lib/convex";
+import { matchesQuery } from "@/lib/search";
 import type { Customer } from "@/types";
 
-const collection = createCollection<Customer>("customers", []);
+export interface ConvexCustomerRow {
+  _id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  houseName?: string;
+  place?: string;
+  pincode?: string;
+  address: string;
+  gstin?: string;
+  createdAt: string;
+}
+
+export function mapConvexCustomer(row: ConvexCustomerRow): Customer {
+  return {
+    id: row._id,
+    name: row.name,
+    phone: row.phone,
+    email: row.email,
+    houseName: row.houseName,
+    place: row.place,
+    pincode: row.pincode,
+    address: row.address,
+    gstin: row.gstin,
+    createdAt: row.createdAt,
+  };
+}
+
+function optional(value?: string) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+}
 
 export const customerService = {
   async getCustomers(): Promise<Customer[]> {
-    return collection.read();
+    const rows = await convex.query(api.customers.list);
+    return rows.map(mapConvexCustomer);
   },
 
   async getCustomerById(id: string): Promise<Customer | undefined> {
-    return collection.read().find((customer) => customer.id === id);
+    const customers = await this.getCustomers();
+    return customers.find((customer) => customer.id === id);
   },
 
   async searchCustomers(query: string): Promise<Customer[]> {
-    return collection.read().filter((customer) =>
+    const customers = await this.getCustomers();
+    return customers.filter((customer) =>
       matchesQuery(
         query,
         customer.name,
@@ -28,28 +63,34 @@ export const customerService = {
     );
   },
 
-  async createCustomer(
-    input: Omit<Customer, "id" | "createdAt">,
-  ): Promise<Customer> {
-    const customer: Customer = {
-      ...input,
-      id: createId("cus"),
-      createdAt: new Date().toISOString(),
-    };
-    collection.write([customer, ...collection.read()]);
-    return customer;
+  async createCustomer(input: Omit<Customer, "id" | "createdAt">): Promise<Customer> {
+    const row = await convex.mutation(api.customers.create, {
+      name: input.name.trim(),
+      phone: input.phone.trim(),
+      address: input.address.trim(),
+      email: optional(input.email),
+      houseName: optional(input.houseName),
+      place: optional(input.place),
+      pincode: optional(input.pincode),
+      gstin: optional(input.gstin),
+    });
+    if (!row) throw new Error("Unable to create customer");
+    return mapConvexCustomer(row);
   },
 
   async updateCustomer(id: string, patch: Partial<Customer>): Promise<Customer> {
-    const current = collection.read();
-    const index = current.findIndex((customer) => customer.id === id);
-    if (index === -1) {
-      throw new Error("Customer not found");
-    }
-    const updated = { ...current[index], ...patch, id };
-    const next = [...current];
-    next[index] = updated;
-    collection.write(next);
-    return updated;
+    const row = await convex.mutation(api.customers.update, {
+      id,
+      name: patch.name,
+      phone: patch.phone,
+      address: patch.address,
+      email: patch.email,
+      houseName: patch.houseName,
+      place: patch.place,
+      pincode: patch.pincode,
+      gstin: patch.gstin,
+    });
+    if (!row) throw new Error("Customer not found");
+    return mapConvexCustomer(row);
   },
 };
