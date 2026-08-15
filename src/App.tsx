@@ -17,6 +17,7 @@ const Expenses = lazy(() => import("@/pages/Expenses"));
 const Reports = lazy(() => import("@/pages/Reports"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const Estimates = lazy(() => import("@/pages/Estimates"));
+const Payments = lazy(() => import("@/pages/Payments"));
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
               <Route path="/products" element={<Products />} />
               <Route path="/expenses" element={<Expenses />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/payments" element={<Payments />} />
               <Route path="/estimates" element={<Estimates />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<Navigate to="/" replace />} />

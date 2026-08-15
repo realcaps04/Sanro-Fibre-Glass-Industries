@@ -12,14 +12,13 @@ import {
 import { Link } from "react-router-dom";
 
 const categories: Array<{
-  to?: string;
-  action?: "payment";
+  to: string;
   label: string;
   icon: LucideIcon;
 }> = [
   { to: "/billing", label: "Door Bills", icon: FileText },
   { to: "/waterproofing-bills", label: "Water proofing", icon: Droplets },
-  { action: "payment", label: "Payments", icon: IndianRupee },
+  { to: "/payments", label: "Payments", icon: IndianRupee },
   { to: "/customers", label: "Customers", icon: Users },
   { to: "/products", label: "Products", icon: Package },
   { to: "/non-gst-bills", label: "Non GST Bills", icon: Receipt },
@@ -27,7 +26,7 @@ const categories: Array<{
   { to: "/estimates", label: "Estimate", icon: ClipboardPen },
 ];
 
-export function CategoryGrid({ onPayment }: { onPayment: () => void }) {
+export function CategoryGrid() {
   return (
     <section>
       <h2 className="mb-4 text-[17px] font-semibold tracking-[-0.03em]">Categories</h2>
@@ -45,21 +44,8 @@ export function CategoryGrid({ onPayment }: { onPayment: () => void }) {
             </>
           );
 
-          if (item.action === "payment") {
-            return (
-              <button
-                key={item.label}
-                type="button"
-                onClick={onPayment}
-                className="flex flex-col items-center gap-2"
-              >
-                {content}
-              </button>
-            );
-          }
-
           return (
-            <Link key={item.label} to={item.to ?? "/"} className="flex flex-col items-center gap-2">
+            <Link key={item.label} to={item.to} className="flex flex-col items-center gap-2">
               {content}
             </Link>
           );

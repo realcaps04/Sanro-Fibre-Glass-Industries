@@ -1,7 +1,6 @@
 import { CategoryGrid } from "@/components/dashboard/CategoryGrid";
 import { FeaturedCard } from "@/components/dashboard/FeaturedCard";
 import { NewBillFlow } from "@/components/billing/NewBillFlow";
-import { PaymentSheet } from "@/components/payments/PaymentSheet";
 import { brandConfig } from "@/brand/config";
 import { Overlay } from "@/components/ui/Overlay";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
@@ -17,7 +16,6 @@ import { Link, useNavigate } from "react-router-dom";
 export default function Dashboard() {
   const { loading, error, refresh, invoices, products } = useData();
   const navigate = useNavigate();
-  const [paymentOpen, setPaymentOpen] = useState(false);
   const [billOpen, setBillOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
 
@@ -99,11 +97,10 @@ export default function Dashboard() {
       </section>
 
       <section className="relative z-10 -mt-8 space-y-6 rounded-t-[36px] bg-background px-5 pt-7 pb-4">
-        <CategoryGrid onPayment={() => setPaymentOpen(true)} />
+        <CategoryGrid />
         <FeaturedCard />
       </section>
 
-      <PaymentSheet open={paymentOpen} onClose={() => setPaymentOpen(false)} />
       <NewBillFlow
         open={billOpen}
         onClose={() => setBillOpen(false)}
