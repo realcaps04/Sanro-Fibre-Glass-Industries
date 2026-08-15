@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Overlay } from "@/components/ui/Overlay";
@@ -6,6 +7,7 @@ import { formatCurrency } from "@/lib/currency";
 import { formatHsn, gstPercent } from "@/lib/hsn";
 import { matchesQuery } from "@/lib/search";
 import type { Product, ProductCategory } from "@/types";
+import { Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 const allCategories: ProductCategory[] = [
@@ -51,15 +53,9 @@ export function ProductSelector({
 
   const filtered = useMemo(
     () =>
-                  catalog.filter((product) =>
-                    matchesQuery(
-                      query,
-                      product.name,
-                      product.sku,
-                      product.description,
-                      product.hsnCode,
-                    ),
-                  ),
+      catalog.filter((product) =>
+        matchesQuery(query, product.name, product.sku, product.description, product.hsnCode),
+      ),
     [catalog, query],
   );
 
@@ -93,16 +89,17 @@ export function ProductSelector({
                       setQuantities((current) => ({ ...current, [product.id]: value }))
                     }
                   />
-                  <button
-                    type="button"
-                    className="text-sm font-medium text-primary"
+                  <Button
+                    size="sm"
+                    className="min-w-[4.5rem] px-3"
+                    icon={<Plus className="h-3.5 w-3.5" />}
                     onClick={() => {
                       onAdd(product, qty);
                       onClose();
                     }}
                   >
                     Add
-                  </button>
+                  </Button>
                 </div>
               </li>
             );

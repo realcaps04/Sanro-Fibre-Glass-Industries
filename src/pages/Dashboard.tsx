@@ -10,7 +10,7 @@ import { useData } from "@/context/DataContext";
 import { formatCurrency } from "@/lib/currency";
 import { greeting } from "@/lib/dates";
 import { activeInvoices } from "@/lib/stats";
-import { Bell, FilePlus2, Files } from "lucide-react";
+import { Bell, FilePlus2, ReceiptText } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -93,7 +93,7 @@ export default function Dashboard() {
             onClick={() => navigate("/billing")}
           >
             My Bills
-            <Files className="h-4 w-4" />
+            <ReceiptText className="h-4 w-4" />
           </button>
         </div>
       </section>

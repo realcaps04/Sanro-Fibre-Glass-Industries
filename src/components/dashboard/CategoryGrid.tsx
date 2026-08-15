@@ -17,7 +17,7 @@ const categories: Array<{
   label: string;
   icon: LucideIcon;
 }> = [
-  { to: "/billing", label: "Billing", icon: FileText },
+  { to: "/billing", label: "Door Bills", icon: FileText },
   { to: "/products?category=waterproofing", label: "Water proofing", icon: Droplets },
   { action: "payment", label: "Payments", icon: IndianRupee },
   { to: "/customers", label: "Customers", icon: Users },
