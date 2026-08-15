@@ -1,22 +1,22 @@
 import {
   ArrowLeftRight,
   BarChart3,
+  Droplets,
   FileText,
   IndianRupee,
   Package,
   Settings,
   Users,
-  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const categories: Array<{ to?: string; action?: "payment"; label: string; icon: LucideIcon }> = [
   { to: "/billing", label: "Billing", icon: FileText },
+  { to: "/products?category=waterproofing", label: "Water proofing", icon: Droplets },
   { action: "payment", label: "Payments", icon: IndianRupee },
   { to: "/customers", label: "Customers", icon: Users },
   { to: "/products", label: "Products", icon: Package },
-  { to: "/expenses", label: "Expenses", icon: Wallet },
   { to: "/transactions", label: "Ledger", icon: ArrowLeftRight },
   { to: "/reports", label: "Reports", icon: BarChart3 },
   { to: "/settings", label: "Settings", icon: Settings },

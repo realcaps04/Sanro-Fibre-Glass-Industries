@@ -14,6 +14,7 @@ const categories: Array<ProductCategory | "all"> = [
   "doors",
   "windows",
   "accessories",
+  "waterproofing",
   "other",
 ];
 

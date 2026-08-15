@@ -24,6 +24,7 @@ export const productCategoryLabel: Record<ProductCategory, string> = {
   doors: "Doors",
   windows: "Windows",
   accessories: "Accessories",
+  waterproofing: "Water proofing",
   other: "Other",
 };
 

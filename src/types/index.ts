@@ -2,7 +2,7 @@ export type PaymentMethod = "cash" | "upi" | "bank" | "credit";
 export type InvoiceStatus = "paid" | "pending" | "partial" | "cancelled";
 export type TransactionType = "sale" | "payment" | "expense" | "refund";
 export type TransactionDirection = "in" | "out";
-export type ProductCategory = "doors" | "windows" | "accessories" | "other";
+export type ProductCategory = "doors" | "windows" | "accessories" | "waterproofing" | "other";
 export type ExpenseCategory =
   | "transport"
   | "electricity"

@@ -3,7 +3,6 @@ import {
   BarChart3,
   FileText,
   Home,
-  LayoutGrid,
   Package,
   Settings,
   Users,
@@ -35,7 +34,6 @@ export const navItems: NavItem[] = [
   { to: "/products", label: "Products", icon: Package, desktop: true, more: true },
   { to: "/expenses", label: "Expenses", icon: Wallet, desktop: true, more: true },
   { to: "/reports", label: "Reports", icon: BarChart3, desktop: true, more: true },
-  { to: "/more", label: "More", icon: LayoutGrid, mobile: true, mobileOnly: true },
 ];
 
 export const settingsItem: NavItem = {
@@ -48,10 +46,5 @@ export const settingsItem: NavItem = {
 
 export function isNavActive(pathname: string, to: string): boolean {
   if (to === "/") return pathname === "/";
-  if (to === "/more") {
-    return ["/products", "/expenses", "/reports", "/settings"].some((path) =>
-      pathname.startsWith(path),
-    );
-  }
   return pathname === to || pathname.startsWith(`${to}/`);
 }

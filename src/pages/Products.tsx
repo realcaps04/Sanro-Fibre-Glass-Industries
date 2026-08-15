@@ -12,21 +12,33 @@ import { matchesQuery } from "@/lib/search";
 import { cn } from "@/lib/cn";
 import type { ProductCategory } from "@/types";
 import { Package, Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 const filters: Array<{ value: ProductCategory | "all" | "low"; label: string }> = [
   { value: "all", label: "All" },
   { value: "doors", label: "Doors" },
   { value: "windows", label: "Windows" },
   { value: "accessories", label: "Accessories" },
+  { value: "waterproofing", label: "Water proofing" },
   { value: "low", label: "Low Stock" },
 ];
 
 export default function Products() {
   const { products, loading, error, refresh } = useData();
+  const [searchParams] = useSearchParams();
+  const requested = searchParams.get("category");
+  const initialFilter =
+    requested && filters.some((item) => item.value === requested)
+      ? (requested as (typeof filters)[number]["value"])
+      : "all";
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<(typeof filters)[number]["value"]>("all");
+  const [filter, setFilter] = useState<(typeof filters)[number]["value"]>(initialFilter);
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setFilter(initialFilter);
+  }, [initialFilter]);
 
   const visible = useMemo(
     () =>

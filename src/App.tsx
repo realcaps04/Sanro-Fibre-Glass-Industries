@@ -15,7 +15,6 @@ const Products = lazy(() => import("@/pages/Products"));
 const Expenses = lazy(() => import("@/pages/Expenses"));
 const Reports = lazy(() => import("@/pages/Reports"));
 const Settings = lazy(() => import("@/pages/Settings"));
-const More = lazy(() => import("@/pages/More"));
 
 export default function App() {
   return (
@@ -35,7 +34,6 @@ export default function App() {
               <Route path="/expenses" element={<Expenses />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/more" element={<More />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>
