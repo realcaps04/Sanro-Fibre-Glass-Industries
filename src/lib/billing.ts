@@ -8,6 +8,11 @@ export const billKindLabel: Record<BillKind, string> = {
 };
 
 export const billKindCategories: Record<BillKind, ProductCategory[]> = {
-  doors: ["doors", "windows", "accessories", "other"],
+  doors: ["doors"],
   waterproofing: ["waterproofing"],
+};
+
+export const billKindSearchPlaceholder: Record<BillKind, string> = {
+  doors: "Search doors",
+  waterproofing: "Search waterproof products",
 };

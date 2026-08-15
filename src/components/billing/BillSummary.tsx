@@ -80,8 +80,8 @@ export function BillSummary({
 
       <div className="mt-5">
         <p className="mb-2 text-sm font-medium">Payment</p>
-        <div className="grid grid-cols-4 gap-2">
-          {enabledMethods.map((method) => (
+        <div className="grid grid-cols-3 gap-2">
+          {enabledMethods.filter((method) => method !== "credit").map((method) => (
             <button
               key={method}
               type="button"
@@ -99,17 +99,19 @@ export function BillSummary({
         </div>
       </div>
 
-      {paymentMethod !== "credit" ? (
-        <div className="mt-4">
-          <Label htmlFor="amount-paid">Amount paid</Label>
-          <Input
-            id="amount-paid"
-            inputMode="numeric"
-            value={amountPaid || ""}
-            onChange={(event) => onAmountPaidChange(Number(event.target.value) || 0)}
-          />
-        </div>
-      ) : null}
+      <div className="mt-4">
+        <Label htmlFor="amount-paid">Amount paid (optional)</Label>
+        <Input
+          id="amount-paid"
+          inputMode="numeric"
+          value={amountPaid || ""}
+          onChange={(event) => onAmountPaidChange(Number(event.target.value) || 0)}
+          placeholder="0"
+        />
+        <p className="mt-1.5 text-xs text-muted-foreground">
+          Leave as 0 to collect payment later.
+        </p>
+      </div>
 
       <Button
         className="mt-5"

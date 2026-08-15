@@ -3,9 +3,7 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { Overlay } from "@/components/ui/Overlay";
 import { useData } from "@/context/DataContext";
 import { formatCurrency } from "@/lib/currency";
-import { productCategoryLabel } from "@/lib/labels";
 import { matchesQuery } from "@/lib/search";
-import { cn } from "@/lib/cn";
 import type { Product, ProductCategory } from "@/types";
 import { useEffect, useMemo, useState } from "react";
 
@@ -23,6 +21,7 @@ interface ProductSelectorProps {
   onAdd: (product: Product, quantity: number) => void;
   allowedCategories?: ProductCategory[];
   title?: string;
+  searchPlaceholder?: string;
 }
 
 export function ProductSelector({
@@ -30,20 +29,17 @@ export function ProductSelector({
   onClose,
   onAdd,
   allowedCategories,
-  title = "Add Product",
+  title = "Select product",
+  searchPlaceholder = "Search products",
 }: ProductSelectorProps) {
   const { products } = useData();
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<ProductCategory | "all">("all");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const scopedCategories = allowedCategories ?? allCategories;
-  const chips: Array<ProductCategory | "all"> =
-    scopedCategories.length > 1 ? ["all", ...scopedCategories] : scopedCategories;
 
   useEffect(() => {
     if (!open) return;
     setQuery("");
-    setCategory("all");
     setQuantities({});
   }, [open]);
 
@@ -54,13 +50,10 @@ export function ProductSelector({
 
   const filtered = useMemo(
     () =>
-      catalog.filter((product) => {
-        const matchesCategory = category === "all" || product.category === category;
-        return (
-          matchesCategory && matchesQuery(query, product.name, product.sku, product.description)
-        );
-      }),
-    [catalog, category, query],
+      catalog.filter((product) =>
+        matchesQuery(query, product.name, product.sku, product.description),
+      ),
+    [catalog, query],
   );
 
   return (
@@ -69,28 +62,9 @@ export function ProductSelector({
         <SearchInput
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search products"
-          aria-label="Search products"
+          placeholder={searchPlaceholder}
+          aria-label={searchPlaceholder}
         />
-        {chips.length > 1 ? (
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {chips.map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => setCategory(item)}
-                className={cn(
-                  "shrink-0 rounded-md border px-3 py-1.5 text-sm",
-                  category === item
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-card text-muted-foreground",
-                )}
-              >
-                {item === "all" ? "All" : productCategoryLabel[item]}
-              </button>
-            ))}
-          </div>
-        ) : null}
         <ul className="divide-y divide-border rounded-md border border-border">
           {filtered.map((product) => {
             const qty = quantities[product.id] ?? 1;

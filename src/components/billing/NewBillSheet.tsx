@@ -6,7 +6,7 @@ import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
 import { calculateBill, lineAmount } from "@/lib/calculations";
-import { billKindCategories, billKindLabel } from "@/lib/billing";
+import { billKindCategories, billKindSearchPlaceholder } from "@/lib/billing";
 import { formatCurrency } from "@/lib/currency";
 import type { BillKind, Customer, InvoiceLineItem, PaymentMethod, Product } from "@/types";
 import { Plus, Trash2 } from "lucide-react";
@@ -64,18 +64,16 @@ export function NewBillSheet({
         items,
         discount,
         taxRate,
-        amountPaid: paymentMethod === "credit" ? 0 : amountPaid,
+        amountPaid,
       }),
-    [amountPaid, discount, items, paymentMethod, taxRate],
+    [amountPaid, discount, items, taxRate],
   );
 
   useEffect(() => {
-    if (paymentMethod === "credit") {
-      setAmountPaid(0);
-      return;
+    if (amountPaid > totals.grandTotal) {
+      setAmountPaid(totals.grandTotal);
     }
-    setAmountPaid(totals.grandTotal);
-  }, [paymentMethod, totals.grandTotal]);
+  }, [amountPaid, totals.grandTotal]);
 
   const addProduct = (product: Product, quantity: number) => {
     setItems((current) => {
@@ -125,7 +123,7 @@ export function NewBillSheet({
         items,
         discount,
         taxRate,
-        amountPaid: paymentMethod === "credit" ? 0 : amountPaid,
+        amountPaid,
         paymentMethod,
         notes: settings.invoice.defaultNotes,
         billKind: kind,
@@ -163,56 +161,56 @@ export function NewBillSheet({
           </section>
 
           <section>
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-sm font-medium text-muted-foreground">Products</h3>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 text-sm font-medium text-primary"
-                onClick={() => setProductOpen(true)}
-              >
-                <Plus className="h-4 w-4" />
-                Add Product
-              </button>
-            </div>
+            <h3 className="mb-2 text-sm font-medium text-muted-foreground">Products</h3>
             {items.length ? (
-              <ul className="elevated divide-y divide-border rounded-2xl">
-                {items.map((item) => (
-                  <li key={item.productId} className="flex items-center gap-3 px-4 py-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {item.quantity} × {formatCurrency(item.rate)}
+              <div className="space-y-2">
+                <ul className="elevated divide-y divide-border rounded-2xl">
+                  {items.map((item) => (
+                    <li key={item.productId} className="flex items-center gap-3 px-4 py-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {item.quantity} × {formatCurrency(item.rate)}
+                        </p>
+                      </div>
+                      <QuantityStepper
+                        value={item.quantity}
+                        onChange={(value) => updateQty(item.productId, value)}
+                      />
+                      <p className="w-20 text-right text-sm font-medium tabular-nums">
+                        {formatCurrency(item.amount)}
                       </p>
-                    </div>
-                    <QuantityStepper
-                      value={item.quantity}
-                      onChange={(value) => updateQty(item.productId, value)}
-                    />
-                    <p className="w-20 text-right text-sm font-medium tabular-nums">
-                      {formatCurrency(item.amount)}
-                    </p>
-                    <button
-                      type="button"
-                      aria-label={`Remove ${item.name}`}
-                      className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-danger"
-                      onClick={() =>
-                        setItems((current) =>
-                          current.filter((line) => line.productId !== item.productId),
-                        )
-                      }
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
+                      <button
+                        type="button"
+                        aria-label={`Remove ${item.name}`}
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-danger"
+                        onClick={() =>
+                          setItems((current) =>
+                            current.filter((line) => line.productId !== item.productId),
+                          )
+                        }
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => setProductOpen(true)}
+                  className="inline-flex w-full items-center justify-center gap-1 rounded-2xl border border-dashed border-border px-4 py-3 text-sm text-muted-foreground"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add another product
+                </button>
+              </div>
             ) : (
               <button
                 type="button"
                 onClick={() => setProductOpen(true)}
                 className="w-full rounded-2xl border border-dashed border-border px-4 py-8 text-sm text-muted-foreground"
               >
-                Add products to this bill
+                Choose from {kind === "waterproofing" ? "waterproof products" : "doors"}
               </button>
             )}
           </section>
@@ -226,7 +224,9 @@ export function NewBillSheet({
             onPaymentMethodChange={setPaymentMethod}
             amountPaid={amountPaid}
             onAmountPaidChange={setAmountPaid}
-            enabledMethods={settings.invoice.enabledPaymentMethods}
+            enabledMethods={settings.invoice.enabledPaymentMethods.filter(
+              (method) => method !== "credit",
+            )}
             onGenerate={() => void generate()}
             generating={generating}
             disabled={!customer || items.length === 0}
@@ -246,7 +246,8 @@ export function NewBillSheet({
         onClose={() => setProductOpen(false)}
         onAdd={addProduct}
         allowedCategories={billKindCategories[kind]}
-        title={`Add ${billKindLabel[kind]} product`}
+        title={`Select ${kind === "waterproofing" ? "waterproof product" : "door"}`}
+        searchPlaceholder={billKindSearchPlaceholder[kind]}
       />
     </>
   );
