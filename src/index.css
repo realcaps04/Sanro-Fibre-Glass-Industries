@@ -348,7 +348,7 @@ select {
 @media print {
   @page {
     size: A4;
-    margin: 8mm;
+    margin: 12mm;
   }
 
   .no-print,

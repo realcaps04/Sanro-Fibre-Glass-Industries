@@ -10,26 +10,16 @@ export function toWhatsAppNumber(phone: string): string | null {
 export function whatsappChatUrl(phone: string, text = ""): string | null {
   const number = toWhatsAppNumber(phone);
   if (!number) return null;
-  const query = new URLSearchParams({ phone: number });
-  if (text) query.set("text", text);
-  return `https://api.whatsapp.com/send?${query.toString()}`;
+  return text
+    ? `https://wa.me/${number}?text=${encodeURIComponent(text)}`
+    : `https://wa.me/${number}`;
 }
 
-export function openWhatsAppChat(phone: string, text = "", target?: Window | null) {
-  const number = toWhatsAppNumber(phone);
+export function openWhatsAppChat(phone: string, text = "") {
   const url = whatsappChatUrl(phone, text);
-  if (!number || !url) return false;
-  const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const dest = mobile
-    ? `whatsapp://send?phone=${number}${text ? `&text=${encodeURIComponent(text)}` : ""}`
-    : url;
-  if (target && !target.closed) {
-    target.location.href = dest;
-    return true;
-  }
-  const opened = window.open(dest, "_blank");
-  if (!opened) {
-    window.location.href = dest;
-  }
-  return true;
+  if (!url) return null;
+  const opened = window.open(url, "_blank");
+  if (opened) return opened;
+  window.location.assign(url);
+  return null;
 }

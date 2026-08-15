@@ -55,11 +55,13 @@ export default function InvoiceDetails() {
       return;
     }
     const caption = `Invoice ${invoice.number} from ${settings.business.legalName}`;
-    if (!whatsappChatUrl(customer.phone, caption)) {
+    const chatUrl = whatsappChatUrl(customer.phone, caption);
+    if (!chatUrl) {
       toast("Customer phone number is not valid for WhatsApp", "danger");
       return;
     }
-    const chatWindow = window.open("about:blank", "_blank");
+
+    const chatWindow = openWhatsAppChat(customer.phone, caption);
     const filename = `${invoice.number.replace(/\s+/g, "-")}.pdf`;
     setSharing(true);
     try {
@@ -71,17 +73,16 @@ export default function InvoiceDetails() {
             title: `Invoice ${invoice.number}`,
           });
         } catch (error) {
-          if (!isAbortError(error)) {
-            downloadPdfFile(file);
-          }
+          if (!isAbortError(error)) downloadPdfFile(file);
         }
       } else {
         downloadPdfFile(file);
       }
-      openWhatsAppChat(customer.phone, caption, chatWindow);
+      if (chatWindow?.closed) {
+        openWhatsAppChat(customer.phone, caption);
+      }
     } catch {
-      openWhatsAppChat(customer.phone, caption, chatWindow);
-      toast("PDF could not be created. WhatsApp is opening anyway.", "danger");
+      toast("Could not prepare the PDF. WhatsApp is open for this customer.", "danger");
     } finally {
       setSharing(false);
     }

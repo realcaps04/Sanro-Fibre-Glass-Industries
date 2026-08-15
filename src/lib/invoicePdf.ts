@@ -53,22 +53,25 @@ function canvasToPdf(canvas: HTMLCanvasElement) {
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
-  const imageHeight = (canvas.height * pageWidth) / canvas.width;
+  const margin = 12;
+  const contentWidth = pageWidth - margin * 2;
+  const contentHeight = pageHeight - margin * 2;
+  const imageHeight = (canvas.height * contentWidth) / canvas.width;
 
-  if (imageHeight <= pageHeight) {
-    pdf.addImage(image, "JPEG", 0, 0, pageWidth, imageHeight);
+  if (imageHeight <= contentHeight) {
+    pdf.addImage(image, "JPEG", margin, margin, contentWidth, imageHeight);
     return pdf;
   }
 
   let remaining = imageHeight;
-  let position = 0;
-  pdf.addImage(image, "JPEG", 0, position, pageWidth, imageHeight);
-  remaining -= pageHeight;
+  let y = margin;
+  pdf.addImage(image, "JPEG", margin, y, contentWidth, imageHeight);
+  remaining -= contentHeight;
   while (remaining > 0) {
-    position -= pageHeight;
+    y -= contentHeight;
     pdf.addPage();
-    pdf.addImage(image, "JPEG", 0, position, pageWidth, imageHeight);
-    remaining -= pageHeight;
+    pdf.addImage(image, "JPEG", margin, y, contentWidth, imageHeight);
+    remaining -= contentHeight;
   }
   return pdf;
 }
