@@ -107,6 +107,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    applyTheme();
     void refresh();
   }, [refresh]);
 

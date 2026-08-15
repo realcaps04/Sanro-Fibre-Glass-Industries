@@ -185,6 +185,56 @@ h3 {
   background: radial-gradient(circle, rgb(214 255 74 / 0.45) 0%, rgb(214 255 74 / 0.08) 55%, transparent 70%);
 }
 
+.nav-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.nav-indicator::after {
+  content: "";
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgb(214 255 74 / 0.42) 0%,
+    rgb(214 255 74 / 0.12) 48%,
+    transparent 72%
+  );
+  box-shadow: 0 0 18px rgb(214 255 74 / 0.18);
+}
+
+.nav-link {
+  color: inherit;
+  transition: color 240ms ease;
+}
+
+.nav-icon {
+  transition:
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 240ms ease;
+}
+
+.nav-icon-active {
+  transform: scale(1.08);
+  animation: nav-icon-pop 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes nav-icon-pop {
+  0% {
+    transform: scale(0.9);
+  }
+  55% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1.08);
+  }
+}
+
 .progress-lime {
   background: linear-gradient(90deg, #f5e15a 0%, #d6ff4a 55%, #9be34a 100%);
 }
