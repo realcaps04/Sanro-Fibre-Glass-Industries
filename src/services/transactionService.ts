@@ -24,6 +24,43 @@ export interface TransactionFilters {
   to?: string;
 }
 
+export function filterTransactions(
+  transactions: Transaction[],
+  filters: TransactionFilters = {},
+): Transaction[] {
+  return transactions.filter((tx) => {
+    if (filters.type && filters.type !== "all" && tx.type !== filters.type) return false;
+    if (
+      filters.paymentMethod &&
+      filters.paymentMethod !== "all" &&
+      tx.paymentMethod !== filters.paymentMethod
+    ) {
+      return false;
+    }
+    if (filters.status && filters.status !== "all" && tx.status !== filters.status) {
+      return false;
+    }
+    if (filters.customerId && filters.customerId !== "all" && tx.customerId !== filters.customerId) {
+      return false;
+    }
+    if (filters.minAmount !== undefined && tx.amount < filters.minAmount) return false;
+    if (filters.maxAmount !== undefined && tx.amount > filters.maxAmount) return false;
+    if (filters.from && new Date(tx.date) < new Date(filters.from)) return false;
+    if (filters.to) {
+      const end = new Date(filters.to);
+      end.setHours(23, 59, 59, 999);
+      if (new Date(tx.date) > end) return false;
+    }
+    return matchesQuery(
+      filters.query ?? "",
+      tx.reference,
+      tx.party,
+      tx.description,
+      tx.type,
+    );
+  });
+}
+
 export const transactionService = {
   async getTransactions(): Promise<Transaction[]> {
     return [...collection.read()].sort(
@@ -32,38 +69,7 @@ export const transactionService = {
   },
 
   async searchTransactions(filters: TransactionFilters = {}): Promise<Transaction[]> {
-    const transactions = await this.getTransactions();
-    return transactions.filter((tx) => {
-      if (filters.type && filters.type !== "all" && tx.type !== filters.type) return false;
-      if (
-        filters.paymentMethod &&
-        filters.paymentMethod !== "all" &&
-        tx.paymentMethod !== filters.paymentMethod
-      ) {
-        return false;
-      }
-      if (filters.status && filters.status !== "all" && tx.status !== filters.status) {
-        return false;
-      }
-      if (filters.customerId && filters.customerId !== "all" && tx.customerId !== filters.customerId) {
-        return false;
-      }
-      if (filters.minAmount !== undefined && tx.amount < filters.minAmount) return false;
-      if (filters.maxAmount !== undefined && tx.amount > filters.maxAmount) return false;
-      if (filters.from && new Date(tx.date) < new Date(filters.from)) return false;
-      if (filters.to) {
-        const end = new Date(filters.to);
-        end.setHours(23, 59, 59, 999);
-        if (new Date(tx.date) > end) return false;
-      }
-      return matchesQuery(
-        filters.query ?? "",
-        tx.reference,
-        tx.party,
-        tx.description,
-        tx.type,
-      );
-    });
+    return filterTransactions(await this.getTransactions(), filters);
   },
 
   async recordSale(invoice: Invoice): Promise<Transaction> {

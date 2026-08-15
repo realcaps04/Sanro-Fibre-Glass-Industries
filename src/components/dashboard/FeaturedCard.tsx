@@ -35,14 +35,23 @@ export function FeaturedCard() {
         <article className="divide-y divide-border overflow-hidden rounded-[24px] bg-white shadow-[0_14px_36px_rgb(0_63_52/0.08)]">
           {recent.map((tx) => {
             const inflow = tx.direction === "in";
+            const href = tx.invoiceId
+              ? `/billing/${tx.invoiceId}`
+              : tx.type === "expense"
+                ? "/expenses"
+                : "/transactions";
             return (
-              <div key={tx.id} className="flex items-start gap-3 px-4 py-3.5">
+              <Link
+                key={tx.id}
+                to={href}
+                className="flex items-start gap-3 px-4 py-3.5 hover:bg-muted/70"
+              >
                 <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-muted text-foreground">
                   <TxIcon type={tx.type} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold tracking-[-0.02em]">
-                    {tx.type === "sale" ? `Invoice #${tx.reference}` : transactionTypeLabel[tx.type]}
+                    {tx.type === "sale" ? tx.reference : transactionTypeLabel[tx.type]}
                   </p>
                   <p className="truncate text-sm text-muted-foreground">{tx.party}</p>
                   <p className="caption mt-0.5">{formatDateTime(tx.date)}</p>
@@ -61,7 +70,7 @@ export function FeaturedCard() {
                     <StatusBadge status={tx.status} />
                   </div>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </article>

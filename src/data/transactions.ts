@@ -10,7 +10,7 @@ function saleFromInvoice(invoice: Invoice): Transaction {
     direction: "in",
     status: invoice.status,
     paymentMethod: invoice.paymentMethod,
-    date: invoice.date,
+    date: invoice.createdAt || invoice.date,
     invoiceId: invoice.id,
     customerId: invoice.customerId,
     description: `Invoice ${invoice.number}`,

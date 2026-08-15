@@ -19,7 +19,7 @@ import {
 } from "@/lib/dates";
 import { transactionTypeLabel } from "@/lib/labels";
 import { cn } from "@/lib/cn";
-import { transactionService, type TransactionFilters } from "@/services/transactionService";
+import { filterTransactions, type TransactionFilters } from "@/services/transactionService";
 import type { Transaction } from "@/types";
 import {
   ArrowDownLeft,
@@ -29,7 +29,7 @@ import {
   SlidersHorizontal,
   Wallet,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 type DatePreset = "today" | "week" | "month" | "year" | "custom";
@@ -56,7 +56,6 @@ export default function Transactions() {
   const [filters, setFilters] = useState<TransactionFilters>({});
   const [filterOpen, setFilterOpen] = useState(false);
   const [rangeOpen, setRangeOpen] = useState(false);
-  const [visible, setVisible] = useState<Transaction[]>([]);
 
   const dateRange = useMemo(() => {
     const now = new Date();
@@ -68,22 +67,16 @@ export default function Transactions() {
     return { from: filters.from, to: filters.to };
   }, [filters.from, filters.to, preset]);
 
-  useEffect(() => {
-    let cancelled = false;
-    void transactionService
-      .searchTransactions({
+  const visible = useMemo(
+    () =>
+      filterTransactions(transactions, {
         ...filters,
         query,
         from: dateRange.from,
         to: dateRange.to,
-      })
-      .then((result) => {
-        if (!cancelled) setVisible(result);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [dateRange.from, dateRange.to, filters, query, transactions]);
+      }),
+    [dateRange.from, dateRange.to, filters, query, transactions],
+  );
 
   if (loading) return <PageSkeleton />;
   if (error) {

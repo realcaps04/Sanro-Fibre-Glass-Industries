@@ -2,6 +2,7 @@ import { defaultSettings } from "@/data/settings";
 import { mapConvexProduct } from "@/lib/productMap";
 import { mapConvexCustomer } from "@/services/customerService";
 import { mapConvexBill } from "@/services/invoiceService";
+import { expenseTx, saleFromInvoice } from "@/data/transactions";
 import { storage } from "@/lib/storage";
 import {
   customerOutstanding,
@@ -82,6 +83,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   );
   const remoteDoorBills = useQuery(api.doorBills.list);
   const remoteNonGstBills = useQuery(api.nonGstBills.list);
+  const remotePayments = useQuery(api.payments.list);
   const invoices = useMemo(
     () =>
       [...(remoteDoorBills ?? []), ...(remoteNonGstBills ?? [])]
@@ -91,7 +93,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [sidebarCollapsed, setCollapsed] = useState(() =>
@@ -103,15 +104,34 @@ export function DataProvider({ children }: { children: ReactNode }) {
     storage.set("sidebarCollapsed", value);
   }, []);
 
+  const transactions = useMemo<Transaction[]>(() => {
+    const sales = invoices.map(saleFromInvoice);
+    const payments = (remotePayments ?? []).map((row) => ({
+      id: row._id,
+      type: "payment" as const,
+      reference: row.invoiceNumber ?? "Payment",
+      party: row.customerName,
+      amount: row.amount,
+      direction: "in" as const,
+      status: "paid" as const,
+      paymentMethod: row.paymentMethod,
+      date: row.createdAt || row.date,
+      invoiceId: row.invoiceId,
+      customerId: row.customerId,
+      description: row.notes ?? row.productsUsed ?? "Payment received",
+    }));
+    return [...sales, ...payments, ...expenses.map(expenseTx)].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+  }, [expenses, invoices, remotePayments]);
+
   const refresh = useCallback(async () => {
     try {
       setError(null);
-      const [nextTransactions, nextExpenses, nextSettings] = await Promise.all([
-        transactionService.getTransactions(),
+      const [nextExpenses, nextSettings] = await Promise.all([
         expenseService.getExpenses(),
         settingsService.getSettings(),
       ]);
-      setTransactions(nextTransactions);
       setExpenses(nextExpenses);
       setSettings(nextSettings);
       applyTheme();
