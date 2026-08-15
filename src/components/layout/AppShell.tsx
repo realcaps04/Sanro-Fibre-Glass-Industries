@@ -1,7 +1,7 @@
 import { UpdatePrompt } from "@/components/update/UpdatePrompt";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { PageSkeleton } from "@/components/ui/Skeleton";
+import { SplashScreen } from "@/components/layout/SplashScreen";
 import { ToastViewport } from "@/components/ui/Toast";
 import { cn } from "@/lib/cn";
 import { Suspense } from "react";
@@ -30,7 +30,7 @@ export function AppShell() {
                 ),
           )}
         >
-          <Suspense fallback={<PageSkeleton />}>
+          <Suspense fallback={<SplashScreen />}>
             <Outlet />
           </Suspense>
         </main>

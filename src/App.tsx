@@ -1,7 +1,8 @@
 import { AppShell } from "@/components/layout/AppShell";
+import { BootSplashHandoff, SplashScreen } from "@/components/layout/SplashScreen";
 import { DataProvider } from "@/context/DataContext";
 import { ToastProvider } from "@/context/ToastContext";
-import { lazy } from "react";
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
@@ -20,6 +21,7 @@ export default function App() {
   return (
     <ToastProvider>
       <DataProvider>
+        <BootSplashHandoff />
         <BrowserRouter>
           <Routes>
             <Route element={<AppShell />}>
