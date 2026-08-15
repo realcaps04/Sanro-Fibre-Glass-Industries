@@ -58,14 +58,8 @@ interface DataContextValue {
 
 const DataContext = createContext<DataContextValue | null>(null);
 
-function applyTheme(theme: AppSettings["appearance"]["theme"]) {
-  const root = document.documentElement;
-  if (theme === "system") {
-    const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    root.setAttribute("data-theme", dark ? "dark" : "light");
-    return;
-  }
-  root.setAttribute("data-theme", theme);
+function applyTheme() {
+  document.documentElement.setAttribute("data-theme", "light");
 }
 
 export function DataProvider({ children }: { children: ReactNode }) {
@@ -104,7 +98,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setTransactions(nextTransactions);
       setExpenses(nextExpenses);
       setSettings(nextSettings);
-      applyTheme(nextSettings.appearance.theme);
+      applyTheme();
     } catch {
       setError("Unable to load data. Please try again.");
     } finally {
@@ -215,7 +209,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     async (patch: Partial<AppSettings>) => {
       const next = await settingsService.updateSettings(patch);
       setSettings(next);
-      applyTheme(next.appearance.theme);
+      applyTheme();
     },
     [],
   );

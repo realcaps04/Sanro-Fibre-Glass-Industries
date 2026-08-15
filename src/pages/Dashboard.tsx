@@ -10,12 +10,12 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { useData } from "@/context/DataContext";
 import { formatCurrency } from "@/lib/currency";
 import { greeting } from "@/lib/dates";
-import { ArrowDownLeft, ArrowUpRight, Bell, Ellipsis, Moon, Sun } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Bell, Ellipsis } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
-  const { loading, error, refresh, invoices, products, settings, updateSettings } = useData();
+  const { loading, error, refresh, invoices, products, settings } = useData();
   const navigate = useNavigate();
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [expenseOpen, setExpenseOpen] = useState(false);
@@ -32,14 +32,13 @@ export default function Dashboard() {
   }, [invoices, products]);
 
   const hasAlerts = alerts.pending.length + alerts.lowStock.length > 0;
-  const dark = settings.appearance.theme === "dark";
 
   if (loading) return <DashboardSkeleton />;
   if (error) return <ErrorState title={error} onRetry={() => void refresh()} />;
 
   return (
     <div className="mx-auto w-full max-w-[430px] lg:max-w-none">
-      <section className="hero-gradient px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-16 text-white">
+      <section className="hero-gradient px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-12 text-white">
         <header className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <img
@@ -47,49 +46,37 @@ export default function Dashboard() {
               alt=""
               className="h-11 w-11 shrink-0 rounded-full bg-white object-contain shadow-[0_8px_20px_rgb(0_0_0/0.18)]"
             />
-            <div className="min-w-0">
+            <div className="min-w-0 leading-none">
               <p className="text-[13px] font-medium text-white/75">{greeting()}!</p>
-              <h1 className="truncate text-[17px] font-semibold tracking-[-0.03em]">
+              <h1 className="mt-1 truncate text-[17px] font-semibold tracking-[-0.03em]">
                 {brandConfig.businessName}
               </h1>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="glass-circle flex h-11 w-11 items-center justify-center rounded-full"
-              aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-              onClick={() =>
-                void updateSettings({ appearance: { theme: dark ? "light" : "dark" } })
-              }
-            >
-              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
-            <button
-              type="button"
-              className="glass-circle relative flex h-11 w-11 items-center justify-center rounded-full"
-              aria-label="Notifications"
-              onClick={() => setNotesOpen(true)}
-            >
-              <Bell className="h-4 w-4" />
-              {hasAlerts ? (
-                <span className="absolute top-2.5 right-2.5 h-1.5 w-1.5 rounded-full bg-highlight" />
-              ) : null}
-            </button>
-          </div>
+          <button
+            type="button"
+            className="glass-circle relative flex h-11 w-11 items-center justify-center rounded-full"
+            aria-label="Notifications"
+            onClick={() => setNotesOpen(true)}
+          >
+            <Bell className="h-4 w-4" />
+            {hasAlerts ? (
+              <span className="absolute top-2.5 right-2.5 h-1.5 w-1.5 rounded-full bg-highlight" />
+            ) : null}
+          </button>
         </header>
 
-        <div className="mt-8">
-          <p className="text-[13px] text-white/70">Total Balance</p>
-          <div className="mt-1 flex items-end justify-between gap-3">
+        <div className="mt-6">
+          <p className="text-[13px] leading-none text-white/70">Total Balance</p>
+          <div className="mt-2 flex items-end justify-between gap-3">
             <p className="display-number text-white">{formatCurrency(settings.openingCash)}</p>
-            <span className="mb-1 rounded-full bg-white/12 px-3 py-1 text-[11px] font-semibold tracking-[0.08em] text-white/90 backdrop-blur-md">
+            <span className="mb-0.5 rounded-full bg-white/12 px-3 py-1 text-[11px] font-semibold tracking-[0.08em] text-white/90 backdrop-blur-md">
               INR
             </span>
           </div>
         </div>
 
-        <div className="mt-7 flex items-center gap-2.5">
+        <div className="relative z-20 mt-6 flex items-center gap-2.5">
           <button
             type="button"
             className="btn-glass flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-sm font-semibold"
@@ -117,7 +104,7 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <section className="relative z-10 -mt-10 space-y-7 rounded-t-[36px] bg-[#f0f7f4] px-5 pt-7 pb-4 dark:bg-background">
+      <section className="relative z-10 -mt-8 space-y-6 rounded-t-[36px] bg-background px-5 pt-7 pb-4">
         <CategoryGrid onPayment={() => setPaymentOpen(true)} />
         <FeaturedCard />
       </section>

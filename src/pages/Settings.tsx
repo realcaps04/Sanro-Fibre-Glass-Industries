@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
 import { paymentLabel } from "@/lib/labels";
-import type { AppearanceTheme, PaymentMethod } from "@/types";
+import type { PaymentMethod } from "@/types";
 import { useState } from "react";
 
 export default function Settings() {
@@ -209,27 +209,6 @@ export default function Settings() {
         <Button className="mt-4" onClick={() => void saveInvoice()}>
           Save payment methods
         </Button>
-      </section>
-
-      <section className="elevated rounded-lg p-4">
-        <h2 className="text-sm font-semibold">Appearance</h2>
-        <div className="mt-4 max-w-xs">
-          <Label htmlFor="theme">Theme</Label>
-          <Select
-            id="theme"
-            value={settings.appearance.theme}
-            onChange={(event) => {
-              void updateSettings({
-                appearance: { theme: event.target.value as AppearanceTheme },
-              });
-              toast("Appearance updated");
-            }}
-          >
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="system">System</option>
-          </Select>
-        </div>
       </section>
 
       <section className="elevated rounded-lg p-4">

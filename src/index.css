@@ -2,8 +2,6 @@
 
 :root {
   --background: #f0f7f4;
-  --highlight: #d6ff4a;
-  --highlight-foreground: #003f34;
   --foreground: #0c1f1b;
   --card: #ffffff;
   --border: #d4e6e1;
@@ -13,7 +11,7 @@
   --primary-foreground: #f3fbf8;
   --secondary: #8b5a3c;
   --secondary-foreground: #fff8f3;
-  --highlight: #b2ffd6;
+  --highlight: #d6ff4a;
   --highlight-foreground: #003f34;
   --success: #1f6b4a;
   --success-foreground: #f3faf6;
@@ -132,10 +130,10 @@ h3 {
 }
 
 .display-number {
-  font-size: 2.15rem;
+  font-size: 2.35rem;
   font-weight: 700;
   letter-spacing: -0.04em;
-  line-height: 1.05;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
@@ -200,8 +198,6 @@ h3 {
     #f7f7f7 12px
   );
 }
-
-.elevated {
 
 .nav-gradient {
   background:
