@@ -1,3 +1,4 @@
+import { dummyCustomerIds } from "@/data/customers";
 import { fromCreateInput, mockInvoices, nextInvoiceNumber } from "@/data/invoices";
 import { calculateBill, statusFromBalances } from "@/lib/calculations";
 import { createId, matchesQuery } from "@/lib/search";
@@ -7,15 +8,33 @@ import type { CreateInvoiceInput, Invoice, InvoiceStatus } from "@/types";
 
 const collection = createCollection("invoices", mockInvoices);
 
+function normalizeInvoice(invoice: Invoice): Invoice {
+  if (!dummyCustomerIds.includes(invoice.customerId)) return invoice;
+  return {
+    ...invoice,
+    customerId: "cus_edison",
+    customerName: "Edison Biju",
+  };
+}
+
+function readInvoices(): Invoice[] {
+  const stored = collection.read();
+  const next = stored.map(normalizeInvoice);
+  if (next.some((invoice, index) => invoice.customerId !== stored[index].customerId)) {
+    collection.write(next);
+  }
+  return next;
+}
+
 export const invoiceService = {
   async getInvoices(): Promise<Invoice[]> {
-    return [...collection.read()].sort(
+    return [...readInvoices()].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
   },
 
   async getInvoiceById(id: string): Promise<Invoice | undefined> {
-    return collection.read().find((invoice) => invoice.id === id);
+    return readInvoices().find((invoice) => invoice.id === id);
   },
 
   async searchInvoices(query: string, status?: InvoiceStatus | "all"): Promise<Invoice[]> {

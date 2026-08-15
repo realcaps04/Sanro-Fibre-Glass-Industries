@@ -1,25 +1,45 @@
-import { mockCustomers } from "@/data/customers";
+import { dummyCustomerIds, mockCustomers } from "@/data/customers";
 import { createId, matchesQuery } from "@/lib/search";
 import { createCollection } from "@/services/collection";
 import type { Customer } from "@/types";
 
 const collection = createCollection("customers", mockCustomers);
 
+function readCatalog(): Customer[] {
+  const stored = collection.read();
+  const withoutDummy = stored.filter((customer) => !dummyCustomerIds.includes(customer.id));
+  const hasEdison = withoutDummy.some(
+    (customer) => customer.id === "cus_edison" || customer.phone === "7510483455",
+  );
+  const next = hasEdison ? withoutDummy : [...mockCustomers, ...withoutDummy];
+  if (next.length !== stored.length || stored.some((customer) => dummyCustomerIds.includes(customer.id))) {
+    collection.write(next);
+  }
+  return next;
+}
+
 export const customerService = {
   async getCustomers(): Promise<Customer[]> {
-    return collection.read();
+    return readCatalog();
   },
 
   async getCustomerById(id: string): Promise<Customer | undefined> {
-    return collection.read().find((customer) => customer.id === id);
+    return readCatalog().find((customer) => customer.id === id);
   },
 
   async searchCustomers(query: string): Promise<Customer[]> {
-    return collection
-      .read()
-      .filter((customer) =>
-        matchesQuery(query, customer.name, customer.phone, customer.gstin, customer.address, customer.houseName, customer.place, customer.pincode),
-      );
+    return readCatalog().filter((customer) =>
+      matchesQuery(
+        query,
+        customer.name,
+        customer.phone,
+        customer.gstin,
+        customer.address,
+        customer.houseName,
+        customer.place,
+        customer.pincode,
+      ),
+    );
   },
 
   async createCustomer(
@@ -30,7 +50,7 @@ export const customerService = {
       id: createId("cus"),
       createdAt: new Date().toISOString(),
     };
-    collection.write([customer, ...collection.read()]);
+    collection.write([customer, ...readCatalog()]);
     return customer;
   },
 

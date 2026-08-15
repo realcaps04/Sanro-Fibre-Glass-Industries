@@ -46,8 +46,8 @@ export const mockInvoices: Invoice[] = [
   buildInvoice({
     id: "inv_1045",
     number: "INV-1045",
-    customerId: "cus_abc",
-    customerName: "ABC Interiors",
+    customerId: "cus_edison",
+    customerName: "Edison Biju",
     date: "2026-08-15T18:42:00+05:30",
     createdAt: "2026-08-15T18:42:00+05:30",
     items: [
@@ -63,8 +63,8 @@ export const mockInvoices: Invoice[] = [
   buildInvoice({
     id: "inv_1044",
     number: "INV-1044",
-    customerId: "cus_john",
-    customerName: "John Builders",
+    customerId: "cus_edison",
+    customerName: "Edison Biju",
     date: "2026-08-15T16:20:00+05:30",
     createdAt: "2026-08-15T16:20:00+05:30",
     items: [item("prd_upvc", "UPVC Window", "SD-006", 1, 8750)],
@@ -76,8 +76,8 @@ export const mockInvoices: Invoice[] = [
   buildInvoice({
     id: "inv_1043",
     number: "INV-1043",
-    customerId: "cus_malabar",
-    customerName: "Malabar Homes",
+    customerId: "cus_edison",
+    customerName: "Edison Biju",
     date: "2026-08-15T14:10:00+05:30",
     createdAt: "2026-08-15T14:10:00+05:30",
     items: [item("prd_sliding", "Sliding Glass Door", "SD-005", 1, 28900)],
@@ -89,8 +89,8 @@ export const mockInvoices: Invoice[] = [
   buildInvoice({
     id: "inv_1042",
     number: "INV-1042",
-    customerId: "cus_greenleaf",
-    customerName: "Greenleaf Interiors",
+    customerId: "cus_edison",
+    customerName: "Edison Biju",
     date: "2026-08-15T11:30:00+05:30",
     createdAt: "2026-08-15T11:30:00+05:30",
     items: [
@@ -105,8 +105,8 @@ export const mockInvoices: Invoice[] = [
   buildInvoice({
     id: "inv_1041",
     number: "INV-1041",
-    customerId: "cus_xyz",
-    customerName: "XYZ Constructions",
+    customerId: "cus_edison",
+    customerName: "Edison Biju",
     date: "2026-08-14T17:05:00+05:30",
     createdAt: "2026-08-14T17:05:00+05:30",
     items: [
@@ -121,8 +121,8 @@ export const mockInvoices: Invoice[] = [
   buildInvoice({
     id: "inv_1040",
     number: "INV-1040",
-    customerId: "cus_horizon",
-    customerName: "Horizon Builders",
+    customerId: "cus_edison",
+    customerName: "Edison Biju",
     date: "2026-08-13T12:48:00+05:30",
     createdAt: "2026-08-13T12:48:00+05:30",
     items: [
@@ -137,8 +137,8 @@ export const mockInvoices: Invoice[] = [
   buildInvoice({
     id: "inv_1039",
     number: "INV-1039",
-    customerId: "cus_prestige",
-    customerName: "Prestige Contractors",
+    customerId: "cus_edison",
+    customerName: "Edison Biju",
     date: "2026-08-12T10:15:00+05:30",
     createdAt: "2026-08-12T10:15:00+05:30",
     items: [item("prd_main", "Designer Main Door", "SD-003", 2, 32000)],
@@ -150,8 +150,8 @@ export const mockInvoices: Invoice[] = [
   buildInvoice({
     id: "inv_1038",
     number: "INV-1038",
-    customerId: "cus_royal",
-    customerName: "Royal Wood Works",
+    customerId: "cus_edison",
+    customerName: "Edison Biju",
     date: "2026-08-11T15:22:00+05:30",
     createdAt: "2026-08-11T15:22:00+05:30",
     items: [
@@ -166,8 +166,8 @@ export const mockInvoices: Invoice[] = [
   buildInvoice({
     id: "inv_1037",
     number: "INV-1037",
-    customerId: "cus_abc",
-    customerName: "ABC Interiors",
+    customerId: "cus_edison",
+    customerName: "Edison Biju",
     date: "2026-08-08T11:05:00+05:30",
     createdAt: "2026-08-08T11:05:00+05:30",
     items: [
@@ -182,8 +182,8 @@ export const mockInvoices: Invoice[] = [
   buildInvoice({
     id: "inv_1036",
     number: "INV-1036",
-    customerId: "cus_john",
-    customerName: "John Builders",
+    customerId: "cus_edison",
+    customerName: "Edison Biju",
     date: "2026-08-05T09:40:00+05:30",
     createdAt: "2026-08-05T09:40:00+05:30",
     items: [item("prd_upvc", "UPVC Window", "SD-006", 2, 8750)],
@@ -195,8 +195,8 @@ export const mockInvoices: Invoice[] = [
   buildInvoice({
     id: "inv_1035",
     number: "INV-1035",
-    customerId: "cus_xyz",
-    customerName: "XYZ Constructions",
+    customerId: "cus_edison",
+    customerName: "Edison Biju",
     date: "2026-07-28T16:18:00+05:30",
     createdAt: "2026-07-28T16:18:00+05:30",
     items: [item("prd_fibre", "Fibre Panel Door", "SD-004", 3, 9800)],
@@ -208,8 +208,8 @@ export const mockInvoices: Invoice[] = [
   buildInvoice({
     id: "inv_1034",
     number: "INV-1034",
-    customerId: "cus_malabar",
-    customerName: "Malabar Homes",
+    customerId: "cus_edison",
+    customerName: "Edison Biju",
     date: "2026-07-20T13:00:00+05:30",
     createdAt: "2026-07-20T13:00:00+05:30",
     items: [item("prd_flush", "Premium Flush Door", "SD-002", 1, 24500)],
@@ -222,8 +222,8 @@ export const mockInvoices: Invoice[] = [
   buildInvoice({
     id: "inv_1033",
     number: "INV-1033",
-    customerId: "cus_prestige",
-    customerName: "Prestige Contractors",
+    customerId: "cus_edison",
+    customerName: "Edison Biju",
     date: "2026-08-01T10:12:00+05:30",
     createdAt: "2026-08-01T10:12:00+05:30",
     items: [
