@@ -8,23 +8,18 @@ export default function GetBill() {
   const name = nameParam || params.get("n") || "invoice.pdf";
   const [status, setStatus] = useState<"downloading" | "error">("downloading");
 
-  const apiUrl = useMemo(() => {
-    if (!id) return "";
-    return `/api/invoice-file?${new URLSearchParams({ id, n: name }).toString()}`;
-  }, [id, name]);
-
-  const tmpfilesUrl = useMemo(() => {
+  const downloadUrl = useMemo(() => {
     if (!id) return "";
     return `https://tmpfiles.org/dl/${id}/${encodeURIComponent(name)}`;
   }, [id, name]);
 
   useEffect(() => {
-    if (!id) {
+    if (!downloadUrl) {
       setStatus("error");
       return;
     }
-    window.location.replace(import.meta.env.DEV ? tmpfilesUrl : apiUrl);
-  }, [apiUrl, id, tmpfilesUrl]);
+    window.location.replace(downloadUrl);
+  }, [downloadUrl]);
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-[#f0f7f4] px-6 text-center text-[#003f34]">
@@ -33,9 +28,9 @@ export default function GetBill() {
       <p className="mt-2 text-sm">
         {status === "error" ? "This invoice link is invalid." : "Downloading your invoice PDF…"}
       </p>
-      {apiUrl ? (
+      {downloadUrl ? (
         <a
-          href={import.meta.env.DEV ? tmpfilesUrl : apiUrl}
+          href={downloadUrl}
           className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-[#003f34] px-6 text-sm font-semibold text-white"
         >
           Download PDF

@@ -4,11 +4,6 @@ export type PublishedInvoicePdf = {
   downloadUrl: string;
 };
 
-function isLocalHost() {
-  const host = window.location.hostname;
-  return host === "localhost" || host === "127.0.0.1";
-}
-
 export function toTmpfilesDownloadUrl(url: string) {
   const httpsUrl = url.replace("http://", "https://");
   const parsed = new URL(httpsUrl);
@@ -61,10 +56,8 @@ export async function publishInvoicePdf(file: File): Promise<PublishedInvoicePdf
   };
 }
 
-export function customerPdfLink(published: PublishedInvoicePdf, filename: string) {
-  if (isLocalHost()) return published.downloadUrl;
-  const safe = (filename || published.remoteName || "invoice.pdf").replace(/[^\w.\-]+/g, "_");
-  return `${window.location.origin}/get-bill/${published.id}/${safe}`;
+export function customerPdfLink(published: PublishedInvoicePdf) {
+  return published.downloadUrl;
 }
 
 export function invoiceWhatsAppMessage(

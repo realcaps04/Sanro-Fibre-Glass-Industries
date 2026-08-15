@@ -1,7 +1,5 @@
 {
   "rewrites": [
-    { "source": "/get-bill/:id/:name", "destination": "/api/invoice-file?id=:id&n=:name" },
-    { "source": "/get-bill/:id", "destination": "/api/invoice-file?id=:id" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

@@ -19,14 +19,12 @@ const paymentMode: Record<PaymentMethod, string> = {
 };
 
 function stampLabel(status: InvoiceStatus) {
-  if (status === "paid") return "PAID";
   if (status === "cancelled") return "CANCELLED";
   if (status === "partial") return "PARTIAL";
   return null;
 }
 
 function stampTone(status: InvoiceStatus) {
-  if (status === "paid") return "#16a34a";
   if (status === "cancelled") return "#6b7280";
   return "#dc2626";
 }

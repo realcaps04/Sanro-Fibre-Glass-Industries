@@ -55,7 +55,7 @@ export default function InvoiceDetails() {
           setPdfFile(file);
           try {
             const published = await publishInvoicePdf(file);
-            if (!cancelled) setShareUrl(customerPdfLink(published, filename));
+            if (!cancelled) setShareUrl(customerPdfLink(published));
           } catch {
             if (!cancelled) setPublishFailed(true);
           }
@@ -112,7 +112,7 @@ export default function InvoiceDetails() {
 
       try {
         const published = await publishInvoicePdf(file);
-        const downloadUrl = customerPdfLink(published, filename);
+        const downloadUrl = customerPdfLink(published);
         setShareUrl(downloadUrl);
         const sent = openWhatsAppChatIn(popup, customer.phone, messageFor(downloadUrl));
         if (!sent) toast("Unable to open WhatsApp", "danger");
