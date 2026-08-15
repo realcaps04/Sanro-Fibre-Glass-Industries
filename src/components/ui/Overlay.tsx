@@ -9,9 +9,10 @@ interface OverlayProps {
   title: string;
   children: ReactNode;
   className?: string;
+  nested?: boolean;
 }
 
-export function Overlay({ open, onClose, title, children, className }: OverlayProps) {
+export function Overlay({ open, onClose, title, children, className, nested }: OverlayProps) {
   const isDesktop = useIsDesktop();
 
   if (isDesktop) {
@@ -23,7 +24,7 @@ export function Overlay({ open, onClose, title, children, className }: OverlayPr
   }
 
   return (
-    <BottomSheet open={open} onClose={onClose} title={title} className={className}>
+    <BottomSheet open={open} onClose={onClose} title={title} className={className} nested={nested}>
       {children}
     </BottomSheet>
   );

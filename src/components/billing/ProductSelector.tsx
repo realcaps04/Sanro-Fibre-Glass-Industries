@@ -42,7 +42,7 @@ export function ProductSelector({ open, onClose, onAdd }: ProductSelectorProps) 
   );
 
   return (
-    <Overlay open={open} onClose={onClose} title="Add Product">
+    <Overlay open={open} onClose={onClose} title="Add Product" nested>
       <div className="space-y-4">
         <SearchInput
           value={query}

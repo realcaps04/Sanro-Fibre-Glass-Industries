@@ -1,6 +1,6 @@
 import { cn } from "@/lib/cn";
 import { X } from "lucide-react";
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
 interface BottomSheetProps {
   open: boolean;
@@ -8,6 +8,7 @@ interface BottomSheetProps {
   title: string;
   children: ReactNode;
   className?: string;
+  nested?: boolean;
 }
 
 export function BottomSheet({
@@ -16,18 +17,29 @@ export function BottomSheet({
   title,
   children,
   className,
+  nested = false,
 }: BottomSheetProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(open);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      const frame = window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => setShown(true));
+      });
+      return () => window.cancelAnimationFrame(frame);
+    }
+    setShown(false);
+    const timeout = window.setTimeout(() => setMounted(false), 420);
+    return () => window.clearTimeout(timeout);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
     const previous = document.activeElement as HTMLElement | null;
-    const panel = panelRef.current;
-    const focusable = panel?.querySelector<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-    );
-    focusable?.focus();
     document.body.style.overflow = "hidden";
 
     const onKey = (event: KeyboardEvent) => {
@@ -42,14 +54,22 @@ export function BottomSheet({
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!mounted) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div
+      className={cn(
+        "fixed inset-0 flex items-end justify-center",
+        nested ? "z-[70]" : "z-50",
+      )}
+    >
       <button
         type="button"
         aria-label="Close sheet"
-        className="absolute inset-0 animate-fade-in bg-overlay"
+        className={cn(
+          "absolute inset-0 bg-overlay transition-opacity duration-[400ms] ease-out",
+          shown ? "opacity-100" : "opacity-0",
+        )}
         onClick={onClose}
       />
       <div
@@ -58,27 +78,28 @@ export function BottomSheet({
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          "relative z-10 flex max-h-[88vh] w-full flex-col rounded-t-lg bg-card pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-hero)] animate-sheet-in",
+          "relative z-10 flex max-h-[92dvh] w-full flex-col rounded-t-[28px] bg-card pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-hero)] transition-transform duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
+          shown ? "translate-y-0" : "translate-y-full",
           className,
         )}
       >
-        <div className="flex items-center justify-between px-4 pt-3 pb-2">
-          <div className="mx-auto h-1 w-10 rounded-full bg-border" aria-hidden />
+        <div className="flex items-center justify-center px-4 pt-3 pb-1">
+          <div className="h-1 w-10 rounded-full bg-border" aria-hidden />
         </div>
-        <div className="flex items-center justify-between px-4 pb-3">
-          <h2 id={titleId} className="text-base font-semibold">
+        <div className="flex items-center justify-between px-5 pb-3">
+          <h2 id={titleId} className="text-base font-semibold tracking-[-0.02em]">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
             aria-label="Close"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="overflow-y-auto px-4 pb-4">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">{children}</div>
       </div>
     </div>
   );

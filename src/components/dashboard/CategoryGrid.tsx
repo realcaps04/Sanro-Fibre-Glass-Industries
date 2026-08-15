@@ -11,8 +11,13 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const categories: Array<{ to?: string; action?: "payment"; label: string; icon: LucideIcon }> = [
-  { to: "/billing", label: "Billing", icon: FileText },
+const categories: Array<{
+  to?: string;
+  action?: "payment" | "newBill";
+  label: string;
+  icon: LucideIcon;
+}> = [
+  { action: "newBill", label: "Billing", icon: FileText },
   { to: "/products?category=waterproofing", label: "Water proofing", icon: Droplets },
   { action: "payment", label: "Payments", icon: IndianRupee },
   { to: "/customers", label: "Customers", icon: Users },
@@ -22,7 +27,13 @@ const categories: Array<{ to?: string; action?: "payment"; label: string; icon: 
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 
-export function CategoryGrid({ onPayment }: { onPayment: () => void }) {
+export function CategoryGrid({
+  onPayment,
+  onNewBill,
+}: {
+  onPayment: () => void;
+  onNewBill: () => void;
+}) {
   return (
     <section>
       <h2 className="mb-4 text-[17px] font-semibold tracking-[-0.03em]">Categories</h2>
@@ -46,6 +57,19 @@ export function CategoryGrid({ onPayment }: { onPayment: () => void }) {
                 key={item.label}
                 type="button"
                 onClick={onPayment}
+                className="flex flex-col items-center gap-2"
+              >
+                {content}
+              </button>
+            );
+          }
+
+          if (item.action === "newBill") {
+            return (
+              <button
+                key={item.label}
+                type="button"
+                onClick={onNewBill}
                 className="flex flex-col items-center gap-2"
               >
                 {content}

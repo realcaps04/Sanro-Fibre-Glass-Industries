@@ -1,5 +1,6 @@
 import { CategoryGrid } from "@/components/dashboard/CategoryGrid";
 import { FeaturedCard } from "@/components/dashboard/FeaturedCard";
+import { NewBillSheet } from "@/components/billing/NewBillSheet";
 import { PaymentSheet } from "@/components/payments/PaymentSheet";
 import { brandConfig } from "@/brand/config";
 import { Overlay } from "@/components/ui/Overlay";
@@ -17,6 +18,7 @@ export default function Dashboard() {
   const { loading, error, refresh, invoices, products } = useData();
   const navigate = useNavigate();
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [billOpen, setBillOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
 
   const alerts = useMemo(() => {

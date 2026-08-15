@@ -42,6 +42,7 @@ async function fetchHostedSha(): Promise<string | null> {
 
 export function useAppUpdate() {
   const [available, setAvailable] = useState(false);
+  const [updating, setUpdating] = useState(false);
   const pendingSha = useRef<string | null>(null);
   const hostedSha = useRef<string | null>(null);
   const checking = useRef(false);
@@ -109,12 +110,14 @@ export function useAppUpdate() {
   }, [check, show]);
 
   const update = useCallback(() => {
+    if (updating) return;
+    setUpdating(true);
     if (pendingSha.current) {
       storage.set(APPLIED_KEY, pendingSha.current);
       storage.remove(DISMISSED_KEY);
     }
     void applyAppUpdate();
-  }, []);
+  }, [updating]);
 
   const later = useCallback(() => {
     if (pendingSha.current) {
@@ -125,5 +128,5 @@ export function useAppUpdate() {
     setAvailable(false);
   }, []);
 
-  return { available, update, later };
+  return { available, updating, update, later };
 }

@@ -18,12 +18,40 @@ export async function registerPwa(options: { onNeedRefresh?: () => void }): Prom
   });
 }
 
+function withTimeout(task: Promise<unknown>, ms: number): Promise<void> {
+  return Promise.race([
+    task.then(() => undefined),
+    new Promise<void>((resolve) => window.setTimeout(resolve, ms)),
+  ]);
+}
+
 export async function applyAppUpdate(): Promise<void> {
   if (updateSW) {
-    await updateSW(true);
-    return;
+    void updateSW(false);
   }
-  window.location.reload();
+
+  await withTimeout(
+    (async () => {
+      if ("serviceWorker" in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(
+          registrations.map(async (registration) => {
+            registration.waiting?.postMessage({ type: "SKIP_WAITING" });
+            await registration.unregister();
+          }),
+        );
+      }
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((key) => caches.delete(key)));
+      }
+    })(),
+    300,
+  );
+
+  const url = new URL(window.location.href);
+  url.searchParams.set("updated", String(Date.now()));
+  window.location.replace(url.href);
 }
 
 export function preparePwa(): void {

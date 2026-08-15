@@ -28,7 +28,7 @@ export function CustomerSelector({ open, onClose, onSelect }: CustomerSelectorPr
 
   return (
     <>
-      <Overlay open={open && !adding} onClose={onClose} title="Select Customer">
+      <Overlay open={open && !adding} onClose={onClose} title="Select Customer" nested>
         <div className="space-y-4">
           <SearchInput
             value={query}

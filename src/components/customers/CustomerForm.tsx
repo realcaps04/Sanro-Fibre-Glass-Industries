@@ -52,7 +52,7 @@ export function CustomerForm({ open, onClose, onCreated }: CustomerFormProps) {
   };
 
   return (
-    <Overlay open={open} onClose={onClose} title="Add Customer">
+    <Overlay open={open} onClose={onClose} title="Add Customer" nested>
       <div className="space-y-4">
         <div>
           <Label htmlFor="cus-name">Customer name</Label>
