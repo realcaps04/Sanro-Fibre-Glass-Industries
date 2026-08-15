@@ -1,3 +1,4 @@
+import { dummyExpenseIds } from "@/data/expenses";
 import { dummyInvoiceIds } from "@/data/invoices";
 import { expenseTx, mockTransactions, saleFromInvoice } from "@/data/transactions";
 import { createId, matchesQuery } from "@/lib/search";
@@ -15,9 +16,11 @@ const collection = createCollection("transactions", mockTransactions);
 
 function readTransactions(): Transaction[] {
   const stored = collection.read();
-  const withoutDummy = stored.filter(
-    (tx) => !tx.invoiceId || !dummyInvoiceIds.includes(tx.invoiceId),
-  );
+  const withoutDummy = stored.filter((tx) => {
+    if (tx.invoiceId && dummyInvoiceIds.includes(tx.invoiceId)) return false;
+    if (tx.expenseId && dummyExpenseIds.includes(tx.expenseId)) return false;
+    return true;
+  });
   const missingSeeds = mockTransactions.filter(
     (seed) =>
       seed.invoiceId &&

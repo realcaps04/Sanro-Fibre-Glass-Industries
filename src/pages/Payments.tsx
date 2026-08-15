@@ -10,12 +10,12 @@ import { useData } from "@/context/DataContext";
 import { inferBillKind, type BillKind } from "@/lib/billing";
 import { cn } from "@/lib/cn";
 import { formatCurrency } from "@/lib/currency";
-import { formatDate } from "@/lib/dates";
 import { paymentLabel } from "@/lib/labels";
 import { matchesQuery } from "@/lib/search";
 import { activeInvoices } from "@/lib/stats";
-import { IndianRupee, Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import type { Invoice } from "@/types";
+import { Plus } from "lucide-react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 type KindFilter = "all" | BillKind;
@@ -26,10 +26,22 @@ const kindFilters: Array<{ value: KindFilter; label: string }> = [
   { value: "waterproofing", label: "Water proofing" },
 ];
 
-const kindChip: Record<BillKind, string> = {
-  doors: "Door bill",
-  waterproofing: "Water proofing",
-};
+function productUsed(invoice: Invoice): string {
+  return invoice.items
+    .map((item) => (item.quantity > 1 ? `${item.name} × ${item.quantity}` : item.name))
+    .join(", ");
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <p className="text-[11px] font-semibold tracking-[0.06em] text-muted-foreground uppercase">
+        {label}
+      </p>
+      <div className="mt-1 text-sm font-semibold tracking-[-0.02em] text-foreground">{children}</div>
+    </div>
+  );
+}
 
 export default function Payments() {
   const { invoices, products, loading, error, refresh } = useData();
@@ -40,10 +52,11 @@ export default function Payments() {
   const payments = useMemo(
     () =>
       invoices
-        .filter((invoice) => invoice.status !== "cancelled" && invoice.amountPaid > 0)
+        .filter((invoice) => invoice.status !== "cancelled")
         .map((invoice) => ({
           invoice,
           kind: inferBillKind(invoice, products),
+          products: productUsed(invoice),
         }))
         .sort((a, b) => new Date(b.invoice.date).getTime() - new Date(a.invoice.date).getTime()),
     [invoices, products],
@@ -51,11 +64,18 @@ export default function Payments() {
 
   const visible = useMemo(
     () =>
-      payments.filter(({ invoice, kind: invoiceKind }) => {
+      payments.filter(({ invoice, kind: invoiceKind, products: used }) => {
         const matchesKind = kind === "all" || invoiceKind === kind;
         return (
           matchesKind &&
-          matchesQuery(query, invoice.customerName, invoice.number, paymentLabel[invoice.paymentMethod])
+          matchesQuery(
+            query,
+            invoice.customerName,
+            invoice.number,
+            used,
+            paymentLabel[invoice.paymentMethod],
+            invoice.status,
+          )
         );
       }),
     [kind, payments, query],
@@ -78,7 +98,7 @@ export default function Payments() {
     <div>
       <PageHeader
         title="Payments"
-        description="Customer payments for door, waterproofing, and other bills."
+        description="Customer payments for every product type."
         actions={
           <Button icon={<Plus className="h-4 w-4" />} onClick={() => setRecordOpen(true)}>
             Record
@@ -88,7 +108,7 @@ export default function Payments() {
       <SearchInput
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Search customer or invoice"
+        placeholder="Search customer or product"
         aria-label="Search payments"
         className="mb-4"
       />
@@ -121,44 +141,25 @@ export default function Payments() {
         ))}
       </div>
       {visible.length ? (
-        <div className="elevated divide-y divide-border rounded-lg">
-          {visible.map(({ invoice, kind: invoiceKind }) => (
+        <div className="space-y-3">
+          {visible.map(({ invoice, products: used }) => (
             <Link
               key={invoice.id}
               to={`/billing/${invoice.id}`}
-              className="flex items-start gap-3 px-4 py-3 hover:bg-muted/70"
+              className="elevated block rounded-[24px] px-4 py-4"
             >
-              <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-muted">
-                <IndianRupee className="h-4 w-4" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{invoice.customerName}</p>
-                <p className="text-sm text-muted-foreground">
-                  {invoice.number} · {paymentLabel[invoice.paymentMethod]}
-                </p>
-                <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-foreground">
-                    {kindChip[invoiceKind]}
-                  </span>
-                  {invoice.taxRate === 0 ? (
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
-                      Non GST
-                    </span>
-                  ) : null}
-                  <span className="text-xs text-muted-foreground">{formatDate(invoice.date)}</span>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-semibold tabular-nums text-success">
-                  +{formatCurrency(invoice.amountPaid)}
-                </p>
-                {invoice.balance > 0 ? (
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    Due {formatCurrency(invoice.balance)}
-                  </p>
-                ) : null}
-                <div className="mt-1 flex justify-end">
-                  <StatusBadge status={invoice.status} />
+              <div className="space-y-3.5">
+                <Field label="Customer name">{invoice.customerName}</Field>
+                <Field label="Product used">
+                  <span className="leading-snug">{used}</span>
+                </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Payment status">
+                    <StatusBadge status={invoice.status} />
+                  </Field>
+                  <Field label="Payment amount">
+                    <span className="tabular-nums">{formatCurrency(invoice.amountPaid)}</span>
+                  </Field>
                 </div>
               </div>
             </Link>

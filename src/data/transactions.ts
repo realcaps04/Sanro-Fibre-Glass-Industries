@@ -1,4 +1,3 @@
-import { mockExpenses } from "@/data/expenses";
 import { mockInvoices } from "@/data/invoices";
 import type { Expense, Invoice, Transaction } from "@/types";
 
@@ -59,7 +58,6 @@ export const mockTransactions: Transaction[] = [
     .filter((invoice) => invoice.status === "partial")
     .map(paymentFromInvoice)
     .filter((tx): tx is Transaction => tx !== null),
-  ...mockExpenses.map(expenseTx),
 ];
 
 export { saleFromInvoice, paymentFromInvoice, expenseTx };
