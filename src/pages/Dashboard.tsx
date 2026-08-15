@@ -1,7 +1,5 @@
 import { CategoryGrid } from "@/components/dashboard/CategoryGrid";
 import { FeaturedCard } from "@/components/dashboard/FeaturedCard";
-import { CustomerForm } from "@/components/customers/CustomerForm";
-import { ExpenseSheet } from "@/components/expenses/ExpenseSheet";
 import { PaymentSheet } from "@/components/payments/PaymentSheet";
 import { brandConfig } from "@/brand/config";
 import { Overlay } from "@/components/ui/Overlay";
@@ -11,7 +9,7 @@ import { useData } from "@/context/DataContext";
 import { formatCurrency } from "@/lib/currency";
 import { greeting } from "@/lib/dates";
 import { activeInvoices } from "@/lib/stats";
-import { Bell, Ellipsis, FilePlus2, Files } from "lucide-react";
+import { Bell, FilePlus2, Files } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -19,10 +17,7 @@ export default function Dashboard() {
   const { loading, error, refresh, invoices, products } = useData();
   const navigate = useNavigate();
   const [paymentOpen, setPaymentOpen] = useState(false);
-  const [expenseOpen, setExpenseOpen] = useState(false);
-  const [customerOpen, setCustomerOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
 
   const alerts = useMemo(() => {
     const pending = invoices.filter(
@@ -98,14 +93,6 @@ export default function Dashboard() {
             My Bills
             <Files className="h-4 w-4" />
           </button>
-          <button
-            type="button"
-            className="btn-glass flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
-            aria-label="More actions"
-            onClick={() => setMoreOpen(true)}
-          >
-            <Ellipsis className="h-4 w-4" />
-          </button>
         </div>
       </section>
 
@@ -115,8 +102,6 @@ export default function Dashboard() {
       </section>
 
       <PaymentSheet open={paymentOpen} onClose={() => setPaymentOpen(false)} />
-      <ExpenseSheet open={expenseOpen} onClose={() => setExpenseOpen(false)} />
-      <CustomerForm open={customerOpen} onClose={() => setCustomerOpen(false)} />
 
       <Overlay open={notesOpen} onClose={() => setNotesOpen(false)} title="Notifications">
         <div className="space-y-3">
@@ -147,41 +132,6 @@ export default function Dashboard() {
           {!hasAlerts ? (
             <p className="py-6 text-center text-sm text-muted-foreground">You are all caught up.</p>
           ) : null}
-        </div>
-      </Overlay>
-
-      <Overlay open={moreOpen} onClose={() => setMoreOpen(false)} title="More">
-        <div className="grid gap-2">
-          <button
-            type="button"
-            className="rounded-[18px] bg-muted px-4 py-3 text-left text-sm font-semibold"
-            onClick={() => {
-              setMoreOpen(false);
-              setExpenseOpen(true);
-            }}
-          >
-            Add expense
-          </button>
-          <button
-            type="button"
-            className="rounded-[18px] bg-muted px-4 py-3 text-left text-sm font-semibold"
-            onClick={() => {
-              setMoreOpen(false);
-              setCustomerOpen(true);
-            }}
-          >
-            Add customer
-          </button>
-          <button
-            type="button"
-            className="rounded-[18px] bg-muted px-4 py-3 text-left text-sm font-semibold"
-            onClick={() => {
-              setMoreOpen(false);
-              navigate("/products");
-            }}
-          >
-            Products
-          </button>
         </div>
       </Overlay>
     </div>

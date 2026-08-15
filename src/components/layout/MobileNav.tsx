@@ -33,11 +33,13 @@ export function MobileNav() {
                 to={item.to}
                 className={cn(
                   "nav-link relative flex h-12 w-full items-center justify-center rounded-full",
-                  active ? "text-white" : "text-white/70",
+                  !active && "nav-link-muted",
                 )}
               >
                 <Icon
                   className={cn("nav-icon h-6 w-6", active && "nav-icon-active")}
+                  color="#ffffff"
+                  stroke="#ffffff"
                   strokeWidth={active ? 2.25 : 2}
                 />
                 <span className="sr-only">{item.label}</span>

@@ -1,91 +1,75 @@
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useData } from "@/context/DataContext";
 import { formatCurrency } from "@/lib/currency";
-import { expensesInMonth, receivablesTotal } from "@/lib/stats";
-import { ArrowUpRight, Heart } from "lucide-react";
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { formatDateTime } from "@/lib/dates";
+import { transactionTypeLabel } from "@/lib/labels";
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Banknote,
+  FileText,
+  Wallet,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+
+function TxIcon({ type }: { type: string }) {
+  if (type === "expense") return <Wallet className="h-4 w-4" />;
+  if (type === "payment") return <Banknote className="h-4 w-4" />;
+  if (type === "refund") return <ArrowDownLeft className="h-4 w-4" />;
+  return <FileText className="h-4 w-4" />;
+}
 
 export function FeaturedCard() {
-  const { invoices, expenses } = useData();
-  const navigate = useNavigate();
-  const [saved, setSaved] = useState(false);
-
-  const stats = useMemo(() => {
-    const outstanding = receivablesTotal(invoices);
-    const monthExpenses = expensesInMonth(expenses);
-    const pending = invoices.filter(
-      (invoice) => invoice.status === "pending" || invoice.status === "partial",
-    ).length;
-    const active = invoices.filter((invoice) => invoice.status !== "cancelled");
-    const billed = active.reduce((sum, invoice) => sum + invoice.grandTotal, 0);
-    const collected = active.reduce((sum, invoice) => sum + invoice.amountPaid, 0);
-    const collection = billed > 0 ? Math.min(100, Math.round((collected / billed) * 100)) : 0;
-    return { outstanding, monthExpenses, pending, collection };
-  }, [expenses, invoices]);
+  const { transactions } = useData();
+  const recent = transactions.slice(0, 5);
 
   return (
     <section>
-      <h2 className="mb-4 text-[17px] font-semibold tracking-[-0.03em]">Great Deals</h2>
-      <article className="rounded-[24px] bg-white p-4 shadow-[0_14px_36px_rgb(0_63_52/0.08)]">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="text-[15px] font-semibold tracking-[-0.02em]">Outstanding</h3>
-            <p className="mt-0.5 text-xs text-muted-foreground">Open invoices · Receivables</p>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              aria-label={saved ? "Remove from saved" : "Save"}
-              className="rounded-full p-1.5 text-muted-foreground hover:bg-muted"
-              onClick={() => setSaved((value) => !value)}
-            >
-              <Heart className={saved ? "h-4 w-4 fill-danger text-danger" : "h-4 w-4"} />
-            </button>
-            <button
-              type="button"
-              aria-label="Open billing"
-              className="rounded-full p-1.5 text-muted-foreground hover:bg-muted"
-              onClick={() => navigate("/billing")}
-            >
-              <ArrowUpRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
-          <div>
-            <p className="text-[11px] text-muted-foreground">Amount</p>
-            <p className="mt-1 font-semibold tracking-[-0.03em] tabular-nums">
-              {formatCurrency(stats.outstanding)}
-            </p>
-          </div>
-          <div>
-            <p className="text-[11px] text-muted-foreground">This month</p>
-            <p className="mt-1 font-semibold tracking-[-0.03em] tabular-nums">
-              {formatCurrency(stats.monthExpenses)}
-            </p>
-          </div>
-          <div>
-            <p className="text-[11px] text-muted-foreground">Duration</p>
-            <p className="mt-1 font-semibold tracking-[-0.03em]">
-              {stats.pending} invoices
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-4 space-y-2">
-          <div className="h-2 overflow-hidden rounded-full bg-muted">
-            <div className="progress-lime h-full rounded-full" style={{ width: `${stats.collection}%` }} />
-          </div>
-          <div className="progress-stripe h-2 rounded-full" />
-        </div>
-
-        <div className="mt-4">
-          <span className="inline-flex rounded-full bg-foreground px-3 py-1 text-[11px] font-semibold text-background">
-            GST 18%
-          </span>
-        </div>
-      </article>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="text-[17px] font-semibold tracking-[-0.03em]">Recent Transfers</h2>
+        <Link to="/transactions" className="text-sm font-semibold text-primary">
+          View all
+        </Link>
+      </div>
+      {recent.length ? (
+        <article className="divide-y divide-border overflow-hidden rounded-[24px] bg-white shadow-[0_14px_36px_rgb(0_63_52/0.08)]">
+          {recent.map((tx) => {
+            const inflow = tx.direction === "in";
+            return (
+              <div key={tx.id} className="flex items-start gap-3 px-4 py-3.5">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-muted text-foreground">
+                  <TxIcon type={tx.type} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold tracking-[-0.02em]">
+                    {tx.type === "sale" ? `Invoice #${tx.reference}` : transactionTypeLabel[tx.type]}
+                  </p>
+                  <p className="truncate text-sm text-muted-foreground">{tx.party}</p>
+                  <p className="caption mt-0.5">{formatDateTime(tx.date)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="flex items-center justify-end gap-1 text-sm font-semibold tabular-nums tracking-[-0.02em]">
+                    {inflow ? (
+                      <ArrowDownLeft className="h-3.5 w-3.5 text-success" />
+                    ) : (
+                      <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                    {inflow ? "+" : "-"}
+                    {formatCurrency(tx.amount)}
+                  </p>
+                  <div className="mt-1 flex justify-end">
+                    <StatusBadge status={tx.status} />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </article>
+      ) : (
+        <p className="rounded-[24px] border border-dashed border-border bg-white px-4 py-8 text-center text-sm text-muted-foreground">
+          Transfers will appear here after your first bill or payment.
+        </p>
+      )}
     </section>
   );
 }

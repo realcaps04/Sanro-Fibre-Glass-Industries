@@ -40,7 +40,6 @@ export function DashboardSkeleton() {
         <div className="mt-6 flex gap-2">
           <Skeleton className="h-12 flex-1 rounded-full bg-white/20" />
           <Skeleton className="h-12 flex-1 rounded-full bg-white/20" />
-          <Skeleton className="h-12 w-12 rounded-full bg-white/20" />
         </div>
       </div>
       <div className="-mt-8 space-y-6 rounded-t-[36px] bg-background px-5 pt-7">
