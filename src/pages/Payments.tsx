@@ -112,14 +112,14 @@ export default function Payments() {
         aria-label="Search payments"
         className="mb-4"
       />
-      <div className="mb-4 grid grid-cols-3 gap-2">
+      <div className="mb-4 flex gap-2">
         {kindFilters.map((item) => (
           <button
             key={item.value}
             type="button"
             onClick={() => setKind(item.value)}
             className={cn(
-              "h-9 rounded-full border px-2 text-[12px] font-semibold tracking-[-0.02em]",
+              "h-9 shrink-0 rounded-full border px-3 text-[12px] font-semibold tracking-[-0.02em] whitespace-nowrap",
               kind === item.value
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border bg-card text-muted-foreground",

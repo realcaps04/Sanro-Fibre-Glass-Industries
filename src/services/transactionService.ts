@@ -12,7 +12,7 @@ import type {
   TransactionType,
 } from "@/types";
 
-const collection = createCollection("transactions", []);
+const collection = createCollection<Transaction>("transactions", []);
 
 function isDummyTransaction(tx: Transaction): boolean {
   if (dummyTransactionIds.includes(tx.id)) return true;

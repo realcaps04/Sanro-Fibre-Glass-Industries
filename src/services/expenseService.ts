@@ -3,7 +3,7 @@ import { createId, matchesQuery } from "@/lib/search";
 import { createCollection } from "@/services/collection";
 import type { CreateExpenseInput, Expense } from "@/types";
 
-const collection = createCollection("expenses", mockExpenses);
+const collection = createCollection<Expense>("expenses", mockExpenses);
 
 function readExpenses(): Expense[] {
   const stored = collection.read();
