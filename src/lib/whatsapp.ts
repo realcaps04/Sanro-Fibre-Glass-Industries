@@ -7,8 +7,21 @@ export function toWhatsAppNumber(phone: string): string | null {
   return null;
 }
 
-export function whatsappChatUrl(phone: string, text: string): string | null {
+export function whatsappChatUrl(phone: string, text = ""): string | null {
   const number = toWhatsAppNumber(phone);
   if (!number) return null;
-  return `https://wa.me/${number}?text=${encodeURIComponent(text)}`;
+  const query = new URLSearchParams({ phone: number });
+  if (text) query.set("text", text);
+  return `https://api.whatsapp.com/send?${query.toString()}`;
+}
+
+export function openWhatsAppChat(phone: string, text = "", target?: Window | null) {
+  const url = whatsappChatUrl(phone, text);
+  if (!url) return false;
+  if (target && !target.closed) {
+    target.location.href = url;
+    return true;
+  }
+  window.open(url, "_blank", "noopener,noreferrer");
+  return true;
 }

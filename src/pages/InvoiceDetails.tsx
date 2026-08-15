@@ -7,7 +7,7 @@ import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
 import { inferBillKind } from "@/lib/billing";
 import { canSharePdfFile, createInvoicePdfFile, downloadInvoicePdf, downloadPdfFile } from "@/lib/invoicePdf";
-import { whatsappChatUrl } from "@/lib/whatsapp";
+import { openWhatsAppChat, whatsappChatUrl } from "@/lib/whatsapp";
 import { Download, LoaderCircle, Pencil, Printer, Share2 } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
@@ -45,29 +45,38 @@ export default function InvoiceDetails() {
       toast("This customer has no WhatsApp number", "danger");
       return;
     }
-    const filename = `${invoice.number.replace(/\s+/g, "-")}.pdf`;
     const caption = `Invoice ${invoice.number} from ${settings.business.legalName}`;
+    if (!whatsappChatUrl(customer.phone, caption)) {
+      toast("Customer phone number is not valid for WhatsApp", "danger");
+      return;
+    }
+    const chatWindow = window.open("about:blank", "_blank");
+    const filename = `${invoice.number.replace(/\s+/g, "-")}.pdf`;
     setSharing(true);
     try {
       const file = await createInvoicePdfFile(element, filename);
       if (canSharePdfFile(file)) {
-        await navigator.share({
-          files: [file],
-          title: `Invoice ${invoice.number}`,
-          text: caption,
-        });
-        return;
+        try {
+          await navigator.share({
+            files: [file],
+            title: `Invoice ${invoice.number}`,
+            text: caption,
+          });
+        } catch (error) {
+          if (!(error instanceof DOMException && error.name === "AbortError")) throw error;
+          downloadPdfFile(file);
+        }
+      } else {
+        downloadPdfFile(file);
+        toast("PDF downloaded. Attach the PDF in WhatsApp.", "success");
       }
-      downloadPdfFile(file);
-      const url = whatsappChatUrl(customer.phone, caption);
-      if (!url) {
-        toast("Customer phone number is not valid for WhatsApp", "danger");
-        return;
-      }
-      window.open(url, "_blank", "noopener,noreferrer");
-      toast("PDF downloaded. Attach the PDF in WhatsApp.", "success");
+      openWhatsAppChat(customer.phone, caption, chatWindow);
     } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") return;
+      if (error instanceof DOMException && error.name === "AbortError") {
+        openWhatsAppChat(customer.phone, caption, chatWindow);
+        return;
+      }
+      chatWindow?.close();
       toast("Unable to share PDF", "danger");
     } finally {
       setSharing(false);
