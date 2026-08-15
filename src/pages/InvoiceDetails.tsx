@@ -6,9 +6,10 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
 import { inferBillKind } from "@/lib/billing";
-import { createInvoicePdfFile, downloadInvoicePdf, downloadPdfFile, sharePdfFile } from "@/lib/invoicePdf";
-import { customerPdfLink, invoiceWhatsAppMessage, publishInvoicePdf } from "@/lib/invoiceLink";
-import { openPreparingWindow, openWhatsAppChat, openWhatsAppChatIn } from "@/lib/whatsapp";
+import { formatInvoiceAmount } from "@/lib/currency";
+import { invoiceWhatsAppMessage } from "@/lib/invoiceLink";
+import { createInvoicePdfFile, downloadInvoicePdf, downloadPdfFile } from "@/lib/invoicePdf";
+import { openWhatsAppChat } from "@/lib/whatsapp";
 import { Download, LoaderCircle, Pencil, Printer, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -21,8 +22,6 @@ export default function InvoiceDetails() {
   const [sharing, setSharing] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [shareUrl, setShareUrl] = useState<string | null>(null);
-  const [publishFailed, setPublishFailed] = useState(false);
   const invoice = invoices.find((item) => item.id === id);
   const customer = customers.find((item) => item.id === invoice?.customerId);
   const filename = invoice ? `${invoice.number.replace(/\s+/g, "-")}.pdf` : "invoice.pdf";
@@ -37,28 +36,17 @@ export default function InvoiceDetails() {
   useEffect(() => {
     if (!invoice) {
       setPdfFile(null);
-      setShareUrl(null);
-      setPublishFailed(false);
       return;
     }
     let cancelled = false;
     setPdfFile(null);
-    setShareUrl(null);
-    setPublishFailed(false);
     const timer = window.setTimeout(() => {
       void (async () => {
         const element = document.getElementById("invoice-print-root");
         if (!element) return;
         try {
           const file = await createInvoicePdfFile(element, filename);
-          if (cancelled) return;
-          setPdfFile(file);
-          try {
-            const published = await publishInvoicePdf(file);
-            if (!cancelled) setShareUrl(customerPdfLink(published));
-          } catch {
-            if (!cancelled) setPublishFailed(true);
-          }
+          if (!cancelled) setPdfFile(file);
         } catch {
           if (!cancelled) setPdfFile(null);
         }
@@ -84,55 +72,28 @@ export default function InvoiceDetails() {
       toast("This customer has no WhatsApp number", "danger");
       return;
     }
-
-    const messageFor = (downloadUrl: string) =>
-      invoiceWhatsAppMessage(
-        customer.name,
-        invoice.number,
-        settings.business.legalName,
-        downloadUrl,
-      );
-
-    if (shareUrl) {
-      openWhatsAppChat(customer.phone, messageFor(shareUrl));
-      return;
-    }
-
     const element = document.getElementById("invoice-print-root");
-    const popup = openPreparingWindow("Preparing invoice PDF for WhatsApp…");
     setSharing(true);
     try {
       const file = pdfFile ?? (element ? await createInvoicePdfFile(element, filename) : null);
       if (!file) {
-        popup?.close();
         toast("Unable to prepare PDF", "danger");
         return;
       }
       if (!pdfFile) setPdfFile(file);
-
-      try {
-        const published = await publishInvoicePdf(file);
-        const downloadUrl = customerPdfLink(published);
-        setShareUrl(downloadUrl);
-        const sent = openWhatsAppChatIn(popup, customer.phone, messageFor(downloadUrl));
-        if (!sent) toast("Unable to open WhatsApp", "danger");
-        return;
-      } catch {
-        const result = await sharePdfFile(file, `Invoice ${invoice.number} for ${customer.name}`);
-        if (result === "shared" || result === "aborted") {
-          popup?.close();
-          return;
-        }
-        downloadPdfFile(file);
-        openWhatsAppChatIn(
-          popup,
-          customer.phone,
-          `Invoice ${invoice.number} from ${settings.business.legalName}. Please attach the downloaded PDF.`,
-        );
-        toast("PDF saved. Attach it in WhatsApp.", "success");
-      }
+      downloadPdfFile(file);
+      openWhatsAppChat(
+        customer.phone,
+        invoiceWhatsAppMessage(
+          customer.name,
+          invoice.number,
+          settings.business.legalName,
+          formatInvoiceAmount(invoice.grandTotal),
+          invoice.balance > 0 ? formatInvoiceAmount(invoice.balance) : "",
+        ),
+      );
+      toast("PDF saved. Attach it in the WhatsApp chat.", "success");
     } catch {
-      popup?.close();
       toast("Unable to share PDF", "danger");
     } finally {
       setSharing(false);
@@ -177,9 +138,9 @@ export default function InvoiceDetails() {
           variant="outline"
           size="sm"
           className="min-w-0 flex-1 px-2 whitespace-nowrap"
-          disabled={sharing || (!shareUrl && !publishFailed)}
+          disabled={sharing || !pdfFile}
           icon={
-            sharing || (!shareUrl && !publishFailed) ? (
+            sharing || !pdfFile ? (
               <LoaderCircle className="h-4 w-4 shrink-0 animate-spin" />
             ) : (
               <Share2 className="h-4 w-4 shrink-0" />
@@ -187,7 +148,7 @@ export default function InvoiceDetails() {
           }
           onClick={() => void share()}
         >
-          {shareUrl || publishFailed ? "Share" : "Preparing"}
+          {pdfFile ? "Share" : "Preparing"}
         </Button>
         <Button
           variant="outline"
