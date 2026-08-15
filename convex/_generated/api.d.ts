@@ -8,7 +8,16 @@
  * @module
  */
 
+import type * as billActions from "../billActions.js";
+import type * as bills from "../bills.js";
+import type * as customers from "../customers.js";
+import type * as doorBills from "../doorBills.js";
+import type * as estimates from "../estimates.js";
+import type * as nonGstBills from "../nonGstBills.js";
+import type * as payments from "../payments.js";
 import type * as products from "../products.js";
+import type * as totals from "../totals.js";
+import type * as validators from "../validators.js";
 
 import type {
   ApiFromModules,
@@ -17,7 +26,16 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  billActions: typeof billActions;
+  bills: typeof bills;
+  customers: typeof customers;
+  doorBills: typeof doorBills;
+  estimates: typeof estimates;
+  nonGstBills: typeof nonGstBills;
+  payments: typeof payments;
   products: typeof products;
+  totals: typeof totals;
+  validators: typeof validators;
 }>;
 
 /**
