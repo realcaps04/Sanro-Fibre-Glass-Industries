@@ -282,7 +282,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<DataContextValue>(
     () => ({
-      loading: loading || remoteProducts === undefined,
+      loading,
       error,
       invoices,
       customers,
@@ -321,7 +321,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
       products,
       recordPayment,
       refresh,
-      remoteProducts,
       setSidebarCollapsed,
       settings,
       sidebarCollapsed,

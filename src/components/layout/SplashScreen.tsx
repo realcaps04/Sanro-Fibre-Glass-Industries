@@ -19,16 +19,21 @@ export function SplashScreen() {
 
 export function BootSplashHandoff() {
   const { loading } = useData();
-  const skipWait = window.location.pathname.startsWith("/get-bill");
 
   useEffect(() => {
     const splash = document.getElementById("boot-splash");
-    if (!splash || (loading && !skipWait)) return;
-    splash.style.transition = "opacity 400ms ease";
-    splash.style.opacity = "0";
-    const timeout = window.setTimeout(() => splash.remove(), 420);
-    return () => window.clearTimeout(timeout);
-  }, [loading, skipWait]);
+    if (!splash) return;
+
+    const hide = () => {
+      splash.style.transition = "opacity 400ms ease";
+      splash.style.opacity = "0";
+      window.setTimeout(() => splash.remove(), 420);
+    };
+
+    if (!loading) hide();
+    const failsafe = window.setTimeout(hide, 2500);
+    return () => window.clearTimeout(failsafe);
+  }, [loading]);
 
   return null;
 }
