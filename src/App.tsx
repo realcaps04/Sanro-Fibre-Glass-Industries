@@ -2,6 +2,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { BootSplashHandoff } from "@/components/layout/SplashScreen";
 import { DataProvider } from "@/context/DataContext";
 import { ToastProvider } from "@/context/ToastContext";
+import GetBill from "@/pages/GetBill";
 import { lazy } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
@@ -26,6 +27,9 @@ export default function App() {
         <BootSplashHandoff />
         <BrowserRouter>
           <Routes>
+            <Route path="/get-bill/:id/:name" element={<GetBill />} />
+            <Route path="/get-bill/:id" element={<GetBill />} />
+            <Route path="/get-bill" element={<GetBill />} />
             <Route element={<AppShell />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/billing" element={<Billing kind="doors" />} />
