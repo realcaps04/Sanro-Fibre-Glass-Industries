@@ -15,11 +15,13 @@ interface NewBillSheetProps {
   open: boolean;
   onClose: () => void;
   onCreated?: (invoiceId: string) => void;
+  nonGst?: boolean;
 }
 
-export function NewBillSheet({ open, onClose, onCreated }: NewBillSheetProps) {
+export function NewBillSheet({ open, onClose, onCreated, nonGst = false }: NewBillSheetProps) {
   const { settings, createInvoice } = useData();
   const { toast } = useToast();
+  const taxRate = nonGst ? 0 : settings.invoice.taxRate;
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [items, setItems] = useState<InvoiceLineItem[]>([]);
   const [discount, setDiscount] = useState(0);
@@ -46,10 +48,10 @@ export function NewBillSheet({ open, onClose, onCreated }: NewBillSheetProps) {
       calculateBill({
         items,
         discount,
-        taxRate: settings.invoice.taxRate,
+        taxRate,
         amountPaid: paymentMethod === "credit" ? 0 : amountPaid,
       }),
-    [amountPaid, discount, items, paymentMethod, settings.invoice.taxRate],
+    [amountPaid, discount, items, paymentMethod, taxRate],
   );
 
   useEffect(() => {
@@ -107,7 +109,7 @@ export function NewBillSheet({ open, onClose, onCreated }: NewBillSheetProps) {
         customerName: customer.name,
         items,
         discount,
-        taxRate: settings.invoice.taxRate,
+        taxRate,
         amountPaid: paymentMethod === "credit" ? 0 : amountPaid,
         paymentMethod,
         notes: settings.invoice.defaultNotes,
@@ -124,7 +126,7 @@ export function NewBillSheet({ open, onClose, onCreated }: NewBillSheetProps) {
 
   return (
     <>
-      <BottomSheet open={open} onClose={onClose} title="New Bill">
+      <BottomSheet open={open} onClose={onClose} title={nonGst ? "New Non GST Bill" : "New Bill"}>
         <div className="space-y-5">
           <section>
             <h3 className="mb-2 text-sm font-medium text-muted-foreground">Customer</h3>
@@ -203,7 +205,7 @@ export function NewBillSheet({ open, onClose, onCreated }: NewBillSheetProps) {
             totals={totals}
             discount={discount}
             onDiscountChange={setDiscount}
-            taxRate={settings.invoice.taxRate}
+            taxRate={taxRate}
             paymentMethod={paymentMethod}
             onPaymentMethodChange={setPaymentMethod}
             amountPaid={amountPaid}

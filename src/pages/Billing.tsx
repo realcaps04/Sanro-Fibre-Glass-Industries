@@ -22,27 +22,35 @@ const filters: Array<{ value: InvoiceStatus | "all"; label: string }> = [
   { value: "partial", label: "Partial" },
 ];
 
-export default function Billing() {
+export default function Billing({ nonGst = false }: { nonGst?: boolean }) {
   const { invoices, loading, error, refresh } = useData();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<InvoiceStatus | "all">("all");
   const [billOpen, setBillOpen] = useState(false);
 
+  const scoped = useMemo(
+    () =>
+      invoices.filter((invoice) =>
+        nonGst ? invoice.taxRate === 0 : invoice.taxRate > 0,
+      ),
+    [invoices, nonGst],
+  );
+
   const visible = useMemo(
     () =>
-      invoices.filter((invoice) => {
+      scoped.filter((invoice) => {
         const matchesStatus = status === "all" || invoice.status === status;
         return (
           matchesStatus &&
           matchesQuery(query, invoice.number, invoice.customerName, invoice.status)
         );
       }),
-    [invoices, query, status],
+    [query, scoped, status],
   );
 
   const summary = useMemo(() => {
-    const active = activeInvoices(invoices);
+    const active = activeInvoices(scoped);
     return {
       total: active.reduce((sum, invoice) => sum + invoice.grandTotal, 0),
       pending: active
@@ -53,7 +61,7 @@ export default function Billing() {
         .reduce((sum, invoice) => sum + invoice.grandTotal, 0),
       outstanding: active.reduce((sum, invoice) => sum + invoice.balance, 0),
     };
-  }, [invoices]);
+  }, [scoped]);
 
   if (loading) return <PageSkeleton />;
   if (error) return <ErrorState title="Unable to load invoices" onRetry={() => void refresh()} />;
@@ -61,10 +69,10 @@ export default function Billing() {
   return (
     <div>
       <PageHeader
-        title="Billing"
+        title={nonGst ? "Non GST Bills" : "Billing"}
         actions={
           <Button icon={<Plus className="h-4 w-4" />} onClick={() => setBillOpen(true)}>
-            New Bill
+            {nonGst ? "New Non GST Bill" : "New Bill"}
           </Button>
         }
       />
@@ -109,6 +117,7 @@ export default function Billing() {
       <NewBillSheet
         open={billOpen}
         onClose={() => setBillOpen(false)}
+        nonGst={nonGst}
         onCreated={(invoiceId) => navigate(`/billing/${invoiceId}`)}
       />
     </div>

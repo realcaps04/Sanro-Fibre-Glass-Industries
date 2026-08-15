@@ -1,10 +1,10 @@
 import {
-  ArrowLeftRight,
   BarChart3,
   Droplets,
   FileText,
   IndianRupee,
   Package,
+  Receipt,
   Settings,
   Users,
   type LucideIcon,
@@ -22,7 +22,7 @@ const categories: Array<{
   { action: "payment", label: "Payments", icon: IndianRupee },
   { to: "/customers", label: "Customers", icon: Users },
   { to: "/products", label: "Products", icon: Package },
-  { to: "/transactions", label: "Ledger", icon: ArrowLeftRight },
+  { to: "/non-gst-bills", label: "Non GST Bills", icon: Receipt },
   { to: "/reports", label: "Reports", icon: BarChart3 },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
@@ -39,7 +39,7 @@ export function CategoryGrid({ onPayment }: { onPayment: () => void }) {
               <span className="flex h-14 w-14 items-center justify-center rounded-[18px] bg-white text-foreground shadow-[0_10px_24px_rgb(0_63_52/0.08)]">
                 <Icon className="h-5 w-5" strokeWidth={1.7} />
               </span>
-              <span className="text-[11px] font-semibold tracking-[-0.02em] text-foreground">
+              <span className="text-center text-[11px] leading-tight font-semibold tracking-[-0.02em] text-foreground">
                 {item.label}
               </span>
             </>
