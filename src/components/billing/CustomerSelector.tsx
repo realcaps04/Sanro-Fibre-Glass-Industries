@@ -21,7 +21,7 @@ export function CustomerSelector({ open, onClose, onSelect }: CustomerSelectorPr
   const filtered = useMemo(
     () =>
       customers.filter((customer) =>
-        matchesQuery(query, customer.name, customer.phone, customer.gstin, customer.address),
+        matchesQuery(query, customer.name, customer.phone, customer.gstin, customer.address, customer.houseName, customer.place, customer.pincode),
       ),
     [customers, query],
   );

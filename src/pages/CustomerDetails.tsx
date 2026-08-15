@@ -39,8 +39,33 @@ export default function CustomerDetails() {
       <section className="elevated rounded-lg px-4 py-4 text-sm">
         <p className="text-muted-foreground">Phone</p>
         <p className="mt-0.5 font-medium">{customer.phone}</p>
-        <p className="mt-3 text-muted-foreground">Address</p>
-        <p className="mt-0.5">{customer.address}</p>
+        {customer.houseName || customer.place || customer.pincode ? (
+          <>
+            {customer.houseName ? (
+              <>
+                <p className="mt-3 text-muted-foreground">House name</p>
+                <p className="mt-0.5">{customer.houseName}</p>
+              </>
+            ) : null}
+            {customer.place ? (
+              <>
+                <p className="mt-3 text-muted-foreground">Place</p>
+                <p className="mt-0.5">{customer.place}</p>
+              </>
+            ) : null}
+            {customer.pincode ? (
+              <>
+                <p className="mt-3 text-muted-foreground">Pincode</p>
+                <p className="mt-0.5">{customer.pincode}</p>
+              </>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <p className="mt-3 text-muted-foreground">Address</p>
+            <p className="mt-0.5">{customer.address}</p>
+          </>
+        )}
         {customer.gstin ? (
           <>
             <p className="mt-3 text-muted-foreground">GSTIN</p>

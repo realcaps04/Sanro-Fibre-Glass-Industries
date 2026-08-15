@@ -20,6 +20,9 @@ export interface Customer {
   name: string;
   phone: string;
   email?: string;
+  houseName?: string;
+  place?: string;
+  pincode?: string;
   address: string;
   gstin?: string;
   createdAt: string;

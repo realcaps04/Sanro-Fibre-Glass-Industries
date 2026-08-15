@@ -99,10 +99,7 @@ export default function Dashboard() {
       </section>
 
       <section className="relative z-10 -mt-8 space-y-6 rounded-t-[36px] bg-background px-5 pt-7 pb-4">
-        <CategoryGrid
-          onPayment={() => setPaymentOpen(true)}
-          onNewBill={() => setBillOpen(true)}
-        />
+        <CategoryGrid onPayment={() => setPaymentOpen(true)} />
         <FeaturedCard />
       </section>
 

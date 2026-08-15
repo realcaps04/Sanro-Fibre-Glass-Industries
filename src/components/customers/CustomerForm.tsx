@@ -2,9 +2,9 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Overlay } from "@/components/ui/Overlay";
-import { Textarea } from "@/components/ui/Textarea";
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
+import { composeCustomerAddress } from "@/lib/address";
 import type { Customer } from "@/types";
 import { useState } from "react";
 
@@ -19,14 +19,18 @@ export function CustomerForm({ open, onClose, onCreated }: CustomerFormProps) {
   const { toast } = useToast();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
+  const [houseName, setHouseName] = useState("");
+  const [place, setPlace] = useState("");
+  const [pincode, setPincode] = useState("");
   const [gstin, setGstin] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const reset = () => {
     setName("");
     setPhone("");
-    setAddress("");
+    setHouseName("");
+    setPlace("");
+    setPincode("");
     setGstin("");
   };
 
@@ -34,10 +38,20 @@ export function CustomerForm({ open, onClose, onCreated }: CustomerFormProps) {
     if (!name.trim() || !phone.trim()) return;
     setSubmitting(true);
     try {
+      const trimmedHouse = houseName.trim();
+      const trimmedPlace = place.trim();
+      const trimmedPin = pincode.trim();
       const customer = await addCustomer({
         name: name.trim(),
         phone: phone.trim(),
-        address: address.trim() || "Kerala",
+        houseName: trimmedHouse || undefined,
+        place: trimmedPlace || undefined,
+        pincode: trimmedPin || undefined,
+        address: composeCustomerAddress({
+          houseName: trimmedHouse,
+          place: trimmedPlace,
+          pincode: trimmedPin,
+        }),
         gstin: gstin.trim() || undefined,
       });
       toast("Customer added", "success");
@@ -74,12 +88,32 @@ export function CustomerForm({ open, onClose, onCreated }: CustomerFormProps) {
           />
         </div>
         <div>
-          <Label htmlFor="cus-address">Address</Label>
-          <Textarea
-            id="cus-address"
-            value={address}
-            onChange={(event) => setAddress(event.target.value)}
-            placeholder="Street, city, PIN"
+          <Label htmlFor="cus-house">House name</Label>
+          <Input
+            id="cus-house"
+            value={houseName}
+            onChange={(event) => setHouseName(event.target.value)}
+            placeholder="House / building name"
+          />
+        </div>
+        <div>
+          <Label htmlFor="cus-place">Place</Label>
+          <Input
+            id="cus-place"
+            value={place}
+            onChange={(event) => setPlace(event.target.value)}
+            placeholder="Town or locality"
+          />
+        </div>
+        <div>
+          <Label htmlFor="cus-pin">Pincode</Label>
+          <Input
+            id="cus-pin"
+            inputMode="numeric"
+            maxLength={6}
+            value={pincode}
+            onChange={(event) => setPincode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="6-digit PIN"
           />
         </div>
         <div>
