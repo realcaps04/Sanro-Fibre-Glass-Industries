@@ -1,0 +1,59 @@
+import { cn } from "@/lib/cn";
+import { type ButtonHTMLAttributes, type ReactNode } from "react";
+
+type Variant = "primary" | "secondary" | "ghost" | "outline" | "danger";
+type Size = "sm" | "md" | "lg";
+
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: Variant;
+  size?: Size;
+  fullWidth?: boolean;
+  icon?: ReactNode;
+}
+
+const variants: Record<Variant, string> = {
+  primary:
+    "bg-primary text-primary-foreground hover:opacity-92 disabled:opacity-50",
+  secondary:
+    "bg-secondary text-secondary-foreground hover:opacity-92 disabled:opacity-50",
+  ghost:
+    "bg-transparent text-foreground hover:bg-muted disabled:opacity-50",
+  outline:
+    "border border-border bg-card text-foreground hover:bg-muted disabled:opacity-50",
+  danger:
+    "bg-danger text-danger-foreground hover:opacity-92 disabled:opacity-50",
+};
+
+const sizes: Record<Size, string> = {
+  sm: "h-9 px-3 text-sm",
+  md: "h-11 px-4 text-[15px]",
+  lg: "h-12 px-5 text-[15px] font-medium",
+};
+
+export function Button({
+  variant = "primary",
+  size = "md",
+  fullWidth,
+  icon,
+  className,
+  children,
+  type = "button",
+  ...props
+}: ButtonProps) {
+  return (
+    <button
+      type={type}
+      className={cn(
+        "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-opacity active:opacity-80",
+        variants[variant],
+        sizes[size],
+        fullWidth && "w-full",
+        className,
+      )}
+      {...props}
+    >
+      {icon}
+      {children}
+    </button>
+  );
+}
