@@ -82,7 +82,7 @@ export default function Dashboard() {
           <button
             type="button"
             className="btn-glass flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-sm font-semibold"
-            onClick={() => navigate("/billing/new")}
+            onClick={() => setBillOpen(true)}
           >
             <FilePlus2 className="h-4 w-4" />
             New Bill
@@ -99,11 +99,19 @@ export default function Dashboard() {
       </section>
 
       <section className="relative z-10 -mt-8 space-y-6 rounded-t-[36px] bg-background px-5 pt-7 pb-4">
-        <CategoryGrid onPayment={() => setPaymentOpen(true)} />
+        <CategoryGrid
+          onPayment={() => setPaymentOpen(true)}
+          onNewBill={() => setBillOpen(true)}
+        />
         <FeaturedCard />
       </section>
 
       <PaymentSheet open={paymentOpen} onClose={() => setPaymentOpen(false)} />
+      <NewBillSheet
+        open={billOpen}
+        onClose={() => setBillOpen(false)}
+        onCreated={(invoiceId) => navigate(`/billing/${invoiceId}`)}
+      />
 
       <Overlay open={notesOpen} onClose={() => setNotesOpen(false)} title="Notifications">
         <div className="space-y-3">

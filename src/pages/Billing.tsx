@@ -1,4 +1,5 @@
 import { InvoiceList } from "@/components/billing/InvoiceList";
+import { NewBillSheet } from "@/components/billing/NewBillSheet";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -26,6 +27,7 @@ export default function Billing() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<InvoiceStatus | "all">("all");
+  const [billOpen, setBillOpen] = useState(false);
 
   const visible = useMemo(
     () =>
@@ -61,7 +63,7 @@ export default function Billing() {
       <PageHeader
         title="Billing"
         actions={
-          <Button icon={<Plus className="h-4 w-4" />} onClick={() => navigate("/billing/new")}>
+          <Button icon={<Plus className="h-4 w-4" />} onClick={() => setBillOpen(true)}>
             New Bill
           </Button>
         }
@@ -104,6 +106,11 @@ export default function Billing() {
         ))}
       </div>
       <InvoiceList invoices={visible} />
+      <NewBillSheet
+        open={billOpen}
+        onClose={() => setBillOpen(false)}
+        onCreated={(invoiceId) => navigate(`/billing/${invoiceId}`)}
+      />
     </div>
   );
 }

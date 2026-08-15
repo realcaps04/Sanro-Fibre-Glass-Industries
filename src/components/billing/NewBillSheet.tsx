@@ -30,7 +30,7 @@ export function NewBillSheet({ open, onClose, onCreated }: NewBillSheetProps) {
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
+    if (open) return;
     setCustomer(null);
     setItems([]);
     setDiscount(0);
