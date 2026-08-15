@@ -93,34 +93,37 @@ export default function InvoiceDetails() {
   return (
     <div>
       <PageHeader title={`Invoice ${invoice.number}`} backTo="/billing" className="print:hidden" />
-      <div className="no-print mb-4 grid grid-cols-3 gap-2">
+      <div className="no-print mb-4 flex gap-2">
         <Button
           variant="outline"
-          className="px-2 text-xs sm:text-sm"
-          icon={<Share2 className="h-4 w-4" />}
+          size="sm"
+          className="min-w-0 flex-1 px-2 whitespace-nowrap"
+          icon={<Share2 className="h-4 w-4 shrink-0" />}
           onClick={share}
         >
           Share
         </Button>
         <Button
           variant="outline"
-          className="px-2 text-xs sm:text-sm"
+          size="sm"
+          className="min-w-0 flex-1 px-2 whitespace-nowrap"
           disabled={downloading}
           icon={
             downloading ? (
-              <LoaderCircle className="h-4 w-4 animate-spin" />
+              <LoaderCircle className="h-4 w-4 shrink-0 animate-spin" />
             ) : (
-              <Download className="h-4 w-4" />
+              <Download className="h-4 w-4 shrink-0" />
             )
           }
           onClick={() => void downloadPdf()}
         >
-          Download PDF
+          PDF
         </Button>
         <Button
           variant="outline"
-          className="px-2 text-xs sm:text-sm"
-          icon={<Printer className="h-4 w-4" />}
+          size="sm"
+          className="min-w-0 flex-1 px-2 whitespace-nowrap"
+          icon={<Printer className="h-4 w-4 shrink-0" />}
           onClick={() => window.print()}
         >
           Print

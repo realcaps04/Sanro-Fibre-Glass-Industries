@@ -1,11 +1,11 @@
 import {
   BarChart3,
+  ClipboardPen,
   Droplets,
   FileText,
   IndianRupee,
   Package,
   Receipt,
-  Settings,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -24,7 +24,7 @@ const categories: Array<{
   { to: "/products", label: "Products", icon: Package },
   { to: "/non-gst-bills", label: "Non GST Bills", icon: Receipt },
   { to: "/reports", label: "Reports", icon: BarChart3 },
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/estimates", label: "Estimate", icon: ClipboardPen },
 ];
 
 export function CategoryGrid({ onPayment }: { onPayment: () => void }) {

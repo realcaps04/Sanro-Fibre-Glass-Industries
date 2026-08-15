@@ -169,33 +169,33 @@ export function NewBillSheet({
               <div className="space-y-2">
                 <ul className="elevated divide-y divide-border rounded-2xl">
                   {items.map((item) => (
-                    <li key={item.productId} className="flex items-center gap-3 px-4 py-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {item.quantity} × {formatCurrency(item.rate)}
-                          {item.hsnCode ? ` · HSN ${formatHsn(item.hsnCode)}` : ""}
-                        </p>
-                      </div>
-                      <QuantityStepper
-                        value={item.quantity}
-                        onChange={(value) => updateQty(item.productId, value)}
-                      />
-                      <p className="w-20 text-right text-sm font-medium tabular-nums">
-                        {formatCurrency(item.amount)}
+                    <li key={item.productId} className="px-4 py-3">
+                      <p className="font-medium">{item.name}</p>
+                      <p className="mt-0.5 text-sm text-muted-foreground">
+                        {item.quantity} × {formatCurrency(item.rate)}
+                        {item.hsnCode ? ` · HSN ${formatHsn(item.hsnCode)}` : ""}
                       </p>
-                      <button
-                        type="button"
-                        aria-label={`Remove ${item.name}`}
-                        className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-danger"
-                        onClick={() =>
-                          setItems((current) =>
-                            current.filter((line) => line.productId !== item.productId),
-                          )
-                        }
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      <div className="mt-2 flex items-center gap-2">
+                        <QuantityStepper
+                          value={item.quantity}
+                          onChange={(value) => updateQty(item.productId, value)}
+                        />
+                        <p className="min-w-0 flex-1 text-right text-sm font-medium tabular-nums">
+                          {formatCurrency(item.amount)}
+                        </p>
+                        <button
+                          type="button"
+                          aria-label={`Remove ${item.name}`}
+                          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-danger"
+                          onClick={() =>
+                            setItems((current) =>
+                              current.filter((line) => line.productId !== item.productId),
+                            )
+                          }
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </li>
                   ))}
                 </ul>

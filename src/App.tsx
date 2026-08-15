@@ -16,6 +16,7 @@ const Products = lazy(() => import("@/pages/Products"));
 const Expenses = lazy(() => import("@/pages/Expenses"));
 const Reports = lazy(() => import("@/pages/Reports"));
 const Settings = lazy(() => import("@/pages/Settings"));
+const Estimates = lazy(() => import("@/pages/Estimates"));
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
               <Route path="/products" element={<Products />} />
               <Route path="/expenses" element={<Expenses />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/estimates" element={<Estimates />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
