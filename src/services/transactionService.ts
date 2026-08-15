@@ -106,7 +106,18 @@ export const transactionService = {
     return tx;
   },
 
-  async markInvoiceCancelled(invoiceId: string): Promise<void> {
+  async syncSale(invoice: Invoice): Promise<void> {
+    const current = collection.read();
+    const index = current.findIndex((tx) => tx.invoiceId === invoice.id && tx.type === "sale");
+    const sale = saleFromInvoice(invoice);
+    if (index === -1) {
+      collection.write([sale, ...current]);
+      return;
+    }
+    const next = [...current];
+    next[index] = { ...sale, id: current[index].id };
+    collection.write(next);
+  },
     const next = collection.read().map((tx) =>
       tx.invoiceId === invoiceId ? { ...tx, status: "cancelled" as const } : tx,
     );

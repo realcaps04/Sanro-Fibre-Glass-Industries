@@ -63,7 +63,26 @@ export const invoiceService = {
     return invoice;
   },
 
-  async applyPayment(invoiceId: string, amount: number): Promise<Invoice> {
+  async updateInvoice(id: string, input: CreateInvoiceInput): Promise<Invoice> {
+    const current = collection.read();
+    const index = current.findIndex((invoice) => invoice.id === id);
+    if (index === -1) {
+      throw new Error("Invoice not found");
+    }
+    const previous = current[index];
+    const updated = {
+      ...fromCreateInput(previous.id, previous.number, {
+        ...input,
+        date: previous.date,
+        taxRate: input.taxRate ?? previous.taxRate,
+      }),
+      createdAt: previous.createdAt,
+    };
+    const next = [...current];
+    next[index] = updated;
+    collection.write(next);
+    return updated;
+  },
     const current = collection.read();
     const index = current.findIndex((invoice) => invoice.id === invoiceId);
     if (index === -1) {

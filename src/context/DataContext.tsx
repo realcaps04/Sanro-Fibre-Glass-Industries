@@ -46,6 +46,7 @@ interface DataContextValue {
   setSidebarCollapsed: (value: boolean) => void;
   refresh: () => Promise<void>;
   createInvoice: (input: CreateInvoiceInput) => Promise<Invoice>;
+  updateInvoice: (id: string, input: CreateInvoiceInput) => Promise<Invoice>;
   recordPayment: (input: RecordPaymentInput) => Promise<void>;
   addCustomer: (input: Omit<Customer, "id" | "createdAt">) => Promise<Customer>;
   addProduct: (input: Omit<Product, "id">) => Promise<Product>;
@@ -132,6 +133,43 @@ export function DataProvider({ children }: { children: ReactNode }) {
       return invoice;
     },
     [adjustCash, refresh],
+  );
+
+  const updateInvoice = useCallback(
+    async (id: string, input: CreateInvoiceInput) => {
+      const previous =
+        invoices.find((invoice) => invoice.id === id) ??
+        (await invoiceService.getInvoiceById(id));
+      if (!previous) {
+        throw new Error("Invoice not found");
+      }
+      const invoice = await invoiceService.updateInvoice(id, input);
+      await transactionService.syncSale(invoice);
+
+      const oldQty = new Map<string, number>();
+      previous.items.forEach((item) => {
+        oldQty.set(item.productId, (oldQty.get(item.productId) ?? 0) + item.quantity);
+      });
+      const newQty = new Map<string, number>();
+      invoice.items.forEach((item) => {
+        newQty.set(item.productId, (newQty.get(item.productId) ?? 0) + item.quantity);
+      });
+      const productIds = new Set([...oldQty.keys(), ...newQty.keys()]);
+      await Promise.all(
+        [...productIds].map((productId) => {
+          const delta = (oldQty.get(productId) ?? 0) - (newQty.get(productId) ?? 0);
+          return delta ? productService.adjustStock(productId, delta) : undefined;
+        }),
+      );
+
+      const paidDelta = invoice.amountPaid - previous.amountPaid;
+      if (paidDelta) {
+        await adjustCash(paidDelta);
+      }
+      await refresh();
+      return invoice;
+    },
+    [adjustCash, invoices, refresh],
   );
 
   const recordPayment = useCallback(
@@ -251,6 +289,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setSidebarCollapsed,
       refresh,
       createInvoice,
+      updateInvoice,
       recordPayment,
       addCustomer,
       addProduct,
@@ -266,6 +305,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       addProduct,
       cancelInvoice,
       createInvoice,
+      updateInvoice,
       customers,
       error,
       expenses,
