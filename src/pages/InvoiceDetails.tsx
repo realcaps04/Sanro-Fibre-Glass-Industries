@@ -7,7 +7,8 @@ import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
 import { inferBillKind } from "@/lib/billing";
 import { createInvoicePdfFile, downloadInvoicePdf, downloadPdfFile, sharePdfFile } from "@/lib/invoicePdf";
-import { openWhatsAppChat, toWhatsAppNumber } from "@/lib/whatsapp";
+import { invoiceWhatsAppMessage, publishInvoicePdf } from "@/lib/invoiceLink";
+import { openPreparingWindow, openWhatsAppChatIn } from "@/lib/whatsapp";
 import { Download, LoaderCircle, Pencil, Printer, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -71,30 +72,47 @@ export default function InvoiceDetails() {
       return;
     }
     const element = document.getElementById("invoice-print-root");
+    const popup = openPreparingWindow("Preparing invoice PDF for WhatsApp…");
     setSharing(true);
     try {
       const file = pdfFile ?? (element ? await createInvoicePdfFile(element, filename) : null);
       if (!file) {
+        popup?.close();
         toast("Unable to prepare PDF", "danger");
         return;
       }
       if (!pdfFile) setPdfFile(file);
 
-      const number = toWhatsAppNumber(customer.phone);
-      if (number) {
-        void navigator.clipboard?.writeText(number).catch(() => undefined);
+      try {
+        const downloadUrl = await publishInvoicePdf(file);
+        const sent = openWhatsAppChatIn(
+          popup,
+          customer.phone,
+          invoiceWhatsAppMessage(
+            customer.name,
+            invoice.number,
+            settings.business.legalName,
+            downloadUrl,
+          ),
+        );
+        if (!sent) toast("Unable to open WhatsApp", "danger");
+        return;
+      } catch {
+        const result = await sharePdfFile(file, `Invoice ${invoice.number} for ${customer.name}`);
+        if (result === "shared" || result === "aborted") {
+          popup?.close();
+          return;
+        }
+        downloadPdfFile(file);
+        openWhatsAppChatIn(
+          popup,
+          customer.phone,
+          `Invoice ${invoice.number} from ${settings.business.legalName}. Please attach the downloaded PDF.`,
+        );
+        toast("PDF saved. Attach it in WhatsApp.", "success");
       }
-
-      const result = await sharePdfFile(file, `Invoice ${invoice.number} for ${customer.name}`);
-      if (result === "shared" || result === "aborted") return;
-
-      downloadPdfFile(file);
-      openWhatsAppChat(
-        customer.phone,
-        `Invoice ${invoice.number} from ${settings.business.legalName}. Please check the PDF in Downloads and attach it here.`,
-      );
-      toast("PDF saved. Attach it in the WhatsApp chat.", "success");
     } catch {
+      popup?.close();
       toast("Unable to share PDF", "danger");
     } finally {
       setSharing(false);

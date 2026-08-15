@@ -23,3 +23,27 @@ export function openWhatsAppChat(phone: string, text = "") {
   window.location.assign(url);
   return null;
 }
+
+export function openWhatsAppChatIn(target: Window | null, phone: string, text = "") {
+  const url = whatsappChatUrl(phone, text);
+  if (!url) return false;
+  if (target && !target.closed) {
+    target.location.href = url;
+    return true;
+  }
+  return Boolean(openWhatsAppChat(phone, text));
+}
+
+export function openPreparingWindow(message = "Preparing invoice PDF…") {
+  const popup = window.open("about:blank", "_blank");
+  if (!popup) return null;
+  try {
+    popup.document.write(
+      `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1" /></head><body style="margin:0;display:flex;min-height:100vh;align-items:center;justify-content:center;background:#f0f7f4;color:#003f34;font-family:sans-serif;padding:24px;text-align:center">${message}</body></html>`,
+    );
+    popup.document.close();
+  } catch {
+    /* ignore */
+  }
+  return popup;
+}
