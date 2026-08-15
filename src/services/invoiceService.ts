@@ -83,6 +83,8 @@ export const invoiceService = {
     collection.write(next);
     return updated;
   },
+
+  async applyPayment(invoiceId: string, amount: number): Promise<Invoice> {
     const current = collection.read();
     const index = current.findIndex((invoice) => invoice.id === invoiceId);
     if (index === -1) {

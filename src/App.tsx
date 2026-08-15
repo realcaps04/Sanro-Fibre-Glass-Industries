@@ -27,7 +27,8 @@ export default function App() {
           <Routes>
             <Route element={<AppShell />}>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/billing" element={<Billing />} />
+              <Route path="/billing" element={<Billing kind="doors" />} />
+              <Route path="/waterproofing-bills" element={<Billing kind="waterproofing" />} />
               <Route path="/non-gst-bills" element={<Billing nonGst />} />
               <Route path="/billing/new" element={<NewBill />} />
               <Route path="/billing/:id" element={<InvoiceDetails />} />

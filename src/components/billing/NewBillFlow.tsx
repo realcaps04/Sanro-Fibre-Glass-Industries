@@ -8,28 +8,37 @@ interface NewBillFlowProps {
   onClose: () => void;
   onCreated?: (invoiceId: string) => void;
   nonGst?: boolean;
+  kind?: BillKind;
 }
 
-export function NewBillFlow({ open, onClose, onCreated, nonGst = false }: NewBillFlowProps) {
-  const [kind, setKind] = useState<BillKind | null>(null);
+export function NewBillFlow({
+  open,
+  onClose,
+  onCreated,
+  nonGst = false,
+  kind: forcedKind,
+}: NewBillFlowProps) {
+  const [kind, setKind] = useState<BillKind | null>(forcedKind ?? null);
 
   useEffect(() => {
-    if (!open) setKind(null);
-  }, [open]);
+    if (!open) setKind(forcedKind ?? null);
+  }, [open, forcedKind]);
 
   const close = () => {
-    setKind(null);
+    setKind(forcedKind ?? null);
     onClose();
   };
 
+  const selectedKind = forcedKind ?? kind;
+
   return (
     <>
-      {!kind ? (
+      {!selectedKind ? (
         <BillKindPicker open={open} onClose={close} onSelect={setKind} />
       ) : (
         <NewBillSheet
           open={open}
-          kind={kind}
+          kind={selectedKind}
           nonGst={nonGst}
           onClose={close}
           onCreated={onCreated}

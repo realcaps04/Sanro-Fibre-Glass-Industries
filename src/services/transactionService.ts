@@ -118,6 +118,8 @@ export const transactionService = {
     next[index] = { ...sale, id: current[index].id };
     collection.write(next);
   },
+
+  async markInvoiceCancelled(invoiceId: string): Promise<void> {
     const next = collection.read().map((tx) =>
       tx.invoiceId === invoiceId ? { ...tx, status: "cancelled" as const } : tx,
     );

@@ -19,6 +19,7 @@ interface BillSummaryProps {
   onGenerate: () => void;
   generating?: boolean;
   disabled?: boolean;
+  submitLabel?: string;
 }
 
 export function BillSummary({
@@ -34,6 +35,7 @@ export function BillSummary({
   onGenerate,
   generating,
   disabled,
+  submitLabel = "Generate Invoice",
 }: BillSummaryProps) {
   const gstHalf = Math.round(taxRate * 50);
   const rows =
@@ -130,7 +132,7 @@ export function BillSummary({
         disabled={disabled || generating}
         onClick={onGenerate}
       >
-        Generate Invoice
+        {generating ? "Saving…" : submitLabel}
       </Button>
     </section>
   );

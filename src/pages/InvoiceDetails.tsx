@@ -1,13 +1,15 @@
 import { InvoicePreview } from "@/components/billing/InvoicePreview";
+import { NewBillSheet } from "@/components/billing/NewBillSheet";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
+import { inferBillKind } from "@/lib/billing";
 import { formatInvoiceAmount } from "@/lib/currency";
 import { downloadInvoicePdf } from "@/lib/invoicePdf";
 import { whatsappChatUrl } from "@/lib/whatsapp";
-import { Download, LoaderCircle, Printer, Share2 } from "lucide-react";
+import { Download, LoaderCircle, Pencil, Printer, Share2 } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -45,11 +47,19 @@ function invoiceShareText(
 
 export default function InvoiceDetails() {
   const { id } = useParams();
-  const { invoices, customers, settings } = useData();
+  const { invoices, customers, products, settings } = useData();
   const { toast } = useToast();
   const [downloading, setDownloading] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const invoice = invoices.find((item) => item.id === id);
   const customer = customers.find((item) => item.id === invoice?.customerId);
+  const listPath = invoice
+    ? inferBillKind(invoice, products) === "waterproofing"
+      ? "/waterproofing-bills"
+      : invoice.taxRate === 0
+        ? "/non-gst-bills"
+        : "/billing"
+    : "/billing";
 
   if (!invoice) {
     return (
@@ -92,7 +102,23 @@ export default function InvoiceDetails() {
 
   return (
     <div>
-      <PageHeader title={`Invoice ${invoice.number}`} backTo="/billing" className="print:hidden" />
+      <PageHeader
+        title={`Invoice ${invoice.number}`}
+        backTo={listPath}
+        className="print:hidden"
+        actions={
+          invoice.status !== "cancelled" ? (
+            <button
+              type="button"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-foreground"
+              aria-label="Edit bill"
+              onClick={() => setEditOpen(true)}
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+          ) : null
+        }
+      />
       <div className="no-print mb-4 flex gap-2">
         <Button
           variant="outline"
@@ -132,6 +158,15 @@ export default function InvoiceDetails() {
       <div className="overflow-x-auto pb-4">
         <InvoicePreview invoice={invoice} settings={settings} customer={customer} />
       </div>
+      {invoice.status !== "cancelled" ? (
+        <NewBillSheet
+          open={editOpen}
+          kind={inferBillKind(invoice, products)}
+          nonGst={invoice.taxRate === 0}
+          existing={invoice}
+          onClose={() => setEditOpen(false)}
+        />
+      ) : null}
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { calculateBill, lineAmount } from "@/lib/calculations";
 import { billKindCategories, billKindSearchPlaceholder } from "@/lib/billing";
 import { formatHsn } from "@/lib/hsn";
 import { formatCurrency } from "@/lib/currency";
-import type { BillKind, Customer, InvoiceLineItem, PaymentMethod, Product } from "@/types";
+import type { BillKind, Customer, Invoice, InvoiceLineItem, PaymentMethod, Product } from "@/types";
 import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -19,9 +19,13 @@ interface NewBillSheetProps {
   onClose: () => void;
   onCreated?: (invoiceId: string) => void;
   nonGst?: boolean;
+  existing?: Invoice;
 }
 
-function sheetTitle(kind: BillKind, nonGst: boolean) {
+function sheetTitle(kind: BillKind, nonGst: boolean, editing: boolean) {
+  if (editing) {
+    return kind === "waterproofing" ? "Edit Water proof Bill" : "Edit Door Bill";
+  }
   if (nonGst) {
     return kind === "waterproofing" ? "New Non GST Water proof Bill" : "New Non GST Door Bill";
   }
@@ -34,8 +38,9 @@ export function NewBillSheet({
   onClose,
   onCreated,
   nonGst = false,
+  existing,
 }: NewBillSheetProps) {
-  const { settings, createInvoice } = useData();
+  const { settings, customers, createInvoice, updateInvoice } = useData();
   const { toast } = useToast();
   const taxRate = nonGst ? 0 : settings.invoice.taxRate;
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -48,16 +53,33 @@ export function NewBillSheet({
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
-    if (open) return;
-    setCustomer(null);
-    setItems([]);
-    setDiscount(0);
-    setPaymentMethod("upi");
-    setAmountPaid(0);
-    setCustomerOpen(false);
-    setProductOpen(false);
-    setGenerating(false);
-  }, [open]);
+    if (!open) {
+      setCustomer(null);
+      setItems([]);
+      setDiscount(0);
+      setPaymentMethod("upi");
+      setAmountPaid(0);
+      setCustomerOpen(false);
+      setProductOpen(false);
+      setGenerating(false);
+      return;
+    }
+    if (!existing) return;
+    const matched =
+      customers.find((item) => item.id === existing.customerId) ??
+      ({
+        id: existing.customerId,
+        name: existing.customerName,
+        phone: "",
+        address: "",
+        createdAt: existing.createdAt,
+      } satisfies Customer);
+    setCustomer(matched);
+    setItems(existing.items.map((item) => ({ ...item })));
+    setDiscount(existing.discount);
+    setPaymentMethod(existing.paymentMethod === "credit" ? "upi" : existing.paymentMethod);
+    setAmountPaid(existing.amountPaid);
+  }, [customers, existing, open]);
 
   const totals = useMemo(
     () =>
@@ -120,7 +142,7 @@ export function NewBillSheet({
     if (!customer || !items.length) return;
     setGenerating(true);
     try {
-      const invoice = await createInvoice({
+      const payload = {
         customerId: customer.id,
         customerName: customer.name,
         items,
@@ -128,14 +150,17 @@ export function NewBillSheet({
         taxRate,
         amountPaid,
         paymentMethod,
-        notes: settings.invoice.defaultNotes,
+        notes: existing?.notes ?? settings.invoice.defaultNotes,
         billKind: kind,
-      });
-      toast("Invoice created successfully", "success");
+      };
+      const invoice = existing
+        ? await updateInvoice(existing.id, payload)
+        : await createInvoice(payload);
+      toast(existing ? "Invoice updated" : "Invoice created successfully", "success");
       onClose();
       onCreated?.(invoice.id);
     } catch {
-      toast("Unable to create invoice", "danger");
+      toast(existing ? "Unable to update invoice" : "Unable to create invoice", "danger");
     } finally {
       setGenerating(false);
     }
@@ -143,7 +168,7 @@ export function NewBillSheet({
 
   return (
     <>
-      <BottomSheet open={open} onClose={onClose} title={sheetTitle(kind, nonGst)}>
+      <BottomSheet open={open} onClose={onClose} title={sheetTitle(kind, nonGst, Boolean(existing))}>
         <div className="space-y-5">
           <section>
             <h3 className="mb-2 text-sm font-medium text-muted-foreground">Customer</h3>
@@ -234,6 +259,7 @@ export function NewBillSheet({
             onGenerate={() => void generate()}
             generating={generating}
             disabled={!customer || items.length === 0}
+            submitLabel={existing ? "Update Invoice" : "Generate Invoice"}
           />
         </div>
       </BottomSheet>

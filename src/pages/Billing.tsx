@@ -6,6 +6,7 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { useData } from "@/context/DataContext";
+import { inferBillKind, type BillKind } from "@/lib/billing";
 import { formatCurrency } from "@/lib/currency";
 import { matchesQuery } from "@/lib/search";
 import { activeInvoices } from "@/lib/stats";
@@ -22,8 +23,14 @@ const filters: Array<{ value: InvoiceStatus | "all"; label: string }> = [
   { value: "partial", label: "Partial" },
 ];
 
-export default function Billing({ nonGst = false }: { nonGst?: boolean }) {
-  const { invoices, loading, error, refresh } = useData();
+export default function Billing({
+  nonGst = false,
+  kind,
+}: {
+  nonGst?: boolean;
+  kind?: BillKind;
+}) {
+  const { invoices, products, loading, error, refresh } = useData();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<InvoiceStatus | "all">("all");
@@ -31,10 +38,15 @@ export default function Billing({ nonGst = false }: { nonGst?: boolean }) {
 
   const scoped = useMemo(
     () =>
-      invoices.filter((invoice) =>
-        nonGst ? invoice.taxRate === 0 : invoice.taxRate > 0,
-      ),
-    [invoices, nonGst],
+      invoices.filter((invoice) => {
+        const invoiceKind = inferBillKind(invoice, products);
+        if (kind) {
+          if (invoiceKind !== kind) return false;
+          if (kind === "waterproofing") return true;
+        }
+        return nonGst ? invoice.taxRate === 0 : invoice.taxRate > 0;
+      }),
+    [invoices, kind, nonGst, products],
   );
 
   const visible = useMemo(
@@ -69,7 +81,15 @@ export default function Billing({ nonGst = false }: { nonGst?: boolean }) {
   return (
     <div>
       <PageHeader
-        title={nonGst ? "Non GST Bills" : "Billing"}
+        title={
+          kind === "waterproofing"
+            ? "Water proofing"
+            : kind === "doors"
+              ? "Door Bills"
+              : nonGst
+                ? "Non GST Bills"
+                : "Billing"
+        }
         actions={
           <Button icon={<Plus className="h-4 w-4" />} onClick={() => setBillOpen(true)}>
             {nonGst ? "New Non GST Bill" : "New Bill"}
@@ -118,6 +138,7 @@ export default function Billing({ nonGst = false }: { nonGst?: boolean }) {
         open={billOpen}
         onClose={() => setBillOpen(false)}
         nonGst={nonGst}
+        kind={kind}
         onCreated={(invoiceId) => navigate(`/billing/${invoiceId}`)}
       />
     </div>
