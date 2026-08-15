@@ -115,7 +115,7 @@ export default function Settings() {
               onChange={(event) =>
                 setBusiness((current) => ({ ...current, logo: event.target.value }))
               }
-              placeholder="/assets/logo.png"
+              placeholder="/logo.png"
             />
             <p className="mt-1 text-xs text-muted-foreground">
               Optional path. A wordmark is used until a logo file is added.

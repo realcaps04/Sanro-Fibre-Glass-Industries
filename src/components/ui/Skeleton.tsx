@@ -23,20 +23,30 @@ export function ListSkeleton({ rows = 5 }: { rows?: number }) {
 
 export function DashboardSkeleton() {
   return (
-    <div className="space-y-5">
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-28" />
-        <Skeleton className="h-7 w-40" />
-        <Skeleton className="h-4 w-36" />
+    <div>
+      <div className="bg-primary px-5 pt-5 pb-14 lg:rounded-3xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-11 w-11 rounded-2xl bg-white/20" />
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-24 bg-white/20" />
+              <Skeleton className="h-5 w-32 bg-white/20" />
+            </div>
+          </div>
+          <Skeleton className="h-10 w-10 rounded-2xl bg-white/20" />
+        </div>
+        <Skeleton className="mt-8 h-10 w-48 bg-white/20" />
+        <Skeleton className="mt-6 h-12 w-full rounded-full bg-white/20" />
       </div>
-      <Skeleton className="h-36 w-full rounded-md" />
-      <div className="grid grid-cols-4 gap-2">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <Skeleton key={index} className="h-20 rounded-md" />
-        ))}
+      <div className="-mt-8 space-y-5 rounded-t-[28px] bg-background px-5 pt-6">
+        <div className="grid grid-cols-4 gap-2">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} className="h-20 rounded-2xl" />
+          ))}
+        </div>
+        <Skeleton className="h-24 w-full rounded-lg" />
+        <ListSkeleton rows={4} />
       </div>
-      <Skeleton className="h-24 w-full rounded-md" />
-      <ListSkeleton rows={4} />
     </div>
   );
 }

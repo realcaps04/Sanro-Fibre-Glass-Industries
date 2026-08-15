@@ -34,7 +34,7 @@ export function PageHeader({
               <ArrowLeft className="h-5 w-5" />
             </button>
           ) : null}
-          <h1 className="truncate text-xl font-semibold tracking-tight">{title}</h1>
+          <h1 className="truncate text-[1.35rem] font-semibold tracking-[-0.03em]">{title}</h1>
         </div>
         {description ? (
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>

@@ -17,7 +17,7 @@ export function Sidebar() {
         sidebarCollapsed ? "w-[72px]" : "w-[232px]",
       )}
     >
-      <div className={cn("flex h-16 items-center px-4", sidebarCollapsed && "justify-center px-2")}>
+      <div className={cn("flex h-16 items-center px-3", sidebarCollapsed && "justify-center px-2")}>
         <BrandMark compact={sidebarCollapsed} inverted />
       </div>
       <div className="mx-4 h-px bg-white/10" />

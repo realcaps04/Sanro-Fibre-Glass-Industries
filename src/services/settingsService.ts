@@ -7,7 +7,11 @@ const KEY = "settings";
 function mergeSettings(stored: Partial<AppSettings> | null): AppSettings {
   if (!stored) return structuredClone(defaultSettings);
   return {
-    business: { ...defaultSettings.business, ...stored.business },
+    business: {
+      ...defaultSettings.business,
+      ...stored.business,
+      logo: stored.business?.logo || defaultSettings.business.logo,
+    },
     invoice: { ...defaultSettings.invoice, ...stored.invoice },
     appearance: { ...defaultSettings.appearance, ...stored.appearance },
     openingCash: stored.openingCash ?? defaultSettings.openingCash,

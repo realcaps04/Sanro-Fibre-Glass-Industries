@@ -15,15 +15,15 @@ export function FinancialOverview() {
   ];
 
   return (
-    <section className="rounded-md border border-border bg-card">
-      <div className="border-b border-border px-4 py-3">
-        <h2 className="text-sm font-medium text-muted-foreground">Financial Overview</h2>
+    <section className="rounded-lg bg-card px-1 py-1">
+      <div className="px-4 pt-4 pb-2">
+        <h2 className="section-label">Financial Overview</h2>
       </div>
-      <div className="grid grid-cols-3 divide-x divide-border">
+      <div className="grid grid-cols-3">
         {items.map((item) => (
           <div key={item.label} className="px-4 py-3">
-            <p className="text-xs text-muted-foreground">{item.label}</p>
-            <p className="mt-1 text-base font-semibold tracking-tight tabular-nums">
+            <p className="caption">{item.label}</p>
+            <p className="mt-1 text-[15px] font-semibold tracking-[-0.03em] tabular-nums">
               {formatCurrency(item.value)}
             </p>
           </div>

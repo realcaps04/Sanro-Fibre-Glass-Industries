@@ -9,7 +9,7 @@ export const defaultSettings: AppSettings = {
     phone: brandConfig.phone,
     email: brandConfig.email,
     gstin: brandConfig.gstin,
-    logo: "",
+    logo: brandConfig.logo,
   },
   invoice: {
     prefix: "INV-",

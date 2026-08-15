@@ -1,41 +1,45 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f5f2;
-  --foreground: #1c1b19;
+  --background: #f2f9f7;
+  --foreground: #10231c;
   --card: #ffffff;
-  --border: #e4e1da;
-  --muted: #efede7;
-  --muted-foreground: #6a6660;
-  --primary: #2c4a3e;
-  --primary-foreground: #f7f6f3;
-  --secondary: #c4a574;
-  --secondary-foreground: #1c1b19;
+  --border: #d7ebe4;
+  --muted: #e0f2f1;
+  --muted-foreground: #5b6f68;
+  --primary: #06402b;
+  --primary-foreground: #f4fbf8;
+  --secondary: #8b5a3c;
+  --secondary-foreground: #fff8f3;
+  --highlight: #b2ffd6;
+  --highlight-foreground: #06402b;
   --success: #1f6b4a;
   --success-foreground: #f3faf6;
   --warning: #9a6700;
   --warning-foreground: #fff8eb;
   --danger: #b42318;
   --danger-foreground: #fef3f2;
-  --overlay: rgb(28 27 25 / 0.45);
-  --nav: #ffffff;
-  --sidebar: #171916;
-  --sidebar-foreground: #eceae4;
-  --sidebar-muted: #9a9890;
-  --sidebar-active: #c4a574;
+  --overlay: rgb(6 64 43 / 0.42);
+  --nav: #06402b;
+  --sidebar: #06402b;
+  --sidebar-foreground: #f4fbf8;
+  --sidebar-muted: #b7cfc4;
+  --sidebar-active: #b2ffd6;
 }
 
 [data-theme="dark"] {
-  --background: #141413;
-  --foreground: #f3f1ec;
-  --card: #1c1c1a;
-  --border: #2e2d29;
-  --muted: #23221f;
-  --muted-foreground: #a8a49c;
-  --primary: #c4a574;
-  --primary-foreground: #171916;
-  --secondary: #8d9e8f;
-  --secondary-foreground: #141413;
+  --background: #07140f;
+  --foreground: #eef7f3;
+  --card: #0e221b;
+  --border: #1d3a30;
+  --muted: #123328;
+  --muted-foreground: #9bb5ab;
+  --primary: #b2ffd6;
+  --primary-foreground: #06402b;
+  --secondary: #c4895f;
+  --secondary-foreground: #1a100a;
+  --highlight: #b2ffd6;
+  --highlight-foreground: #06402b;
   --success: #3d9a6e;
   --success-foreground: #0c1a13;
   --warning: #d4a017;
@@ -43,15 +47,15 @@
   --danger: #e05a4f;
   --danger-foreground: #1a0a08;
   --overlay: rgb(0 0 0 / 0.62);
-  --nav: #1c1c1a;
-  --sidebar: #10110f;
-  --sidebar-foreground: #eceae4;
-  --sidebar-muted: #8f8c84;
-  --sidebar-active: #c4a574;
+  --nav: #0e221b;
+  --sidebar: #06150f;
+  --sidebar-foreground: #eef7f3;
+  --sidebar-muted: #8eaaa0;
+  --sidebar-active: #b2ffd6;
 }
 
 @theme inline {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -62,6 +66,8 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
@@ -74,9 +80,9 @@
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-muted: var(--sidebar-muted);
   --color-sidebar-active: var(--sidebar-active);
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 10px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
 }
 
 html,
@@ -91,9 +97,39 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   font-size: 15px;
+  font-weight: 500;
   line-height: 1.45;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.display-number {
+  font-size: 2.15rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.section-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--muted-foreground);
+}
+
+.caption {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
 }
 
 * {
@@ -105,7 +141,7 @@ body {
 }
 
 *:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--highlight);
   outline-offset: 2px;
 }
 
@@ -117,7 +153,7 @@ select {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  background: color-mix(in srgb, var(--highlight) 55%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -174,7 +210,7 @@ select {
 }
 
 .pb-nav {
-  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(5.75rem + env(safe-area-inset-bottom));
 }
 
 .safe-bottom {

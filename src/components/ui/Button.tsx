@@ -44,7 +44,7 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-opacity active:opacity-80",
+        "inline-flex items-center justify-center gap-2 rounded-full font-semibold tracking-[-0.02em] transition-opacity active:opacity-80",
         variants[variant],
         sizes[size],
         fullWidth && "w-full",

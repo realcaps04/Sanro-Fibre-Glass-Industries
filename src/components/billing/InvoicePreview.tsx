@@ -19,17 +19,26 @@ export function InvoicePreview({ invoice, settings, customer }: InvoicePreviewPr
     >
       <div className="min-h-[297mm] px-8 py-9 sm:px-12">
         <header className="flex items-start justify-between gap-6">
-          <div>
-            <p className="text-lg font-semibold tracking-[0.18em]">{business.businessName.toUpperCase()}</p>
-            <p className="mt-1 max-w-xs text-xs leading-5 text-[#5f5c56]">
-              {business.legalName}
-              <br />
-              {business.address}
-              <br />
-              {business.phone} · {business.email}
-              <br />
-              GSTIN {business.gstin}
-            </p>
+          <div className="flex items-start gap-3">
+            {business.logo ? (
+              <img
+                src={business.logo}
+                alt=""
+                className="h-14 w-14 object-contain"
+              />
+            ) : null}
+            <div>
+              <p className="text-lg font-semibold tracking-[0.18em]">{business.businessName.toUpperCase()}</p>
+              <p className="mt-1 max-w-xs text-xs leading-5 text-[#5f5c56]">
+                {business.legalName}
+                <br />
+                {business.address}
+                <br />
+                {business.phone} · {business.email}
+                <br />
+                GSTIN {business.gstin}
+              </p>
+            </div>
           </div>
           <div className="text-right">
             <p className="text-xs tracking-[0.22em] text-[#5f5c56]">INVOICE</p>

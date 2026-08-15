@@ -26,29 +26,29 @@ export function RecentTransactions() {
   return (
     <section>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-medium text-muted-foreground">Recent Transactions</h2>
-        <Link to="/transactions" className="text-sm font-medium text-primary">
+        <h2 className="section-label">Recent Transactions</h2>
+        <Link to="/transactions" className="text-sm font-semibold text-primary">
           View all
         </Link>
       </div>
       {recent.length ? (
-        <div className="divide-y divide-border rounded-md border border-border bg-card">
+        <div className="divide-y divide-border rounded-lg bg-card">
           {recent.map((tx) => {
             const inflow = tx.direction === "in";
             return (
-              <div key={tx.id} className="flex items-start gap-3 px-4 py-3">
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-foreground">
+              <div key={tx.id} className="flex items-start gap-3 px-4 py-3.5">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-muted text-foreground">
                   <TxIcon type={tx.type} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
+                  <p className="truncate text-sm font-semibold tracking-[-0.02em]">
                     {tx.type === "sale" ? `Invoice #${tx.reference}` : transactionTypeLabel[tx.type]}
                   </p>
                   <p className="truncate text-sm text-muted-foreground">{tx.party}</p>
-                  <p className="text-xs text-muted-foreground">{formatDateTime(tx.date)}</p>
+                  <p className="caption mt-0.5">{formatDateTime(tx.date)}</p>
                 </div>
                 <div className="text-right">
-                  <p className="flex items-center justify-end gap-1 text-sm font-medium tabular-nums">
+                  <p className="flex items-center justify-end gap-1 text-sm font-semibold tabular-nums tracking-[-0.02em]">
                     {inflow ? (
                       <ArrowDownLeft className="h-3.5 w-3.5 text-success" />
                     ) : (
@@ -66,7 +66,7 @@ export function RecentTransactions() {
           })}
         </div>
       ) : (
-        <p className="rounded-md border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
+        <p className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
           Your transactions will appear here once you create your first bill.
         </p>
       )}

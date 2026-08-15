@@ -5,6 +5,7 @@ import { useData } from "@/context/DataContext";
 import { formatCurrency } from "@/lib/currency";
 import { daysAgo, startOfDay } from "@/lib/dates";
 import { dailySalesSeries, periodRange, salesInRange } from "@/lib/stats";
+import { cn } from "@/lib/cn";
 import type { SalesPeriod } from "@/types";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -15,10 +16,11 @@ const options: Array<{ value: SalesPeriod; label: string }> = [
   { value: "30d", label: "30 Days" },
 ];
 
-export function SalesSummary() {
+export function SalesSummary({ variant = "card" }: { variant?: "card" | "hero" }) {
   const { invoices } = useData();
   const [period, setPeriod] = useState<SalesPeriod>("today");
   const now = useMemo(() => new Date(), []);
+  const hero = variant === "hero";
 
   const { current, previous, series, label } = useMemo(() => {
     const range = periodRange(period, now);
@@ -39,28 +41,28 @@ export function SalesSummary() {
 
   const delta = previous === 0 ? (current > 0 ? 100 : 0) : ((current - previous) / previous) * 100;
   const positive = delta >= 0;
+  const periodTitle =
+    period === "today" ? "Today's Sales" : period === "7d" ? "7-day Sales" : "30-day Sales";
 
   return (
-    <section className="rounded-md border border-border bg-card px-4 py-4">
+    <section className={cn(!hero && "rounded-lg border border-border bg-card px-4 py-4")}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-muted-foreground">
-            {period === "today" ? "Today's Sales" : period === "7d" ? "7-day Sales" : "30-day Sales"}
-          </p>
-          <p className="mt-1 text-[2rem] leading-none font-semibold tracking-tight">
+          <p className={cn("section-label", hero && "text-white/70")}>{periodTitle}</p>
+          <p className={cn("display-number mt-2", hero && "text-white")}>
             {formatCurrency(current)}
           </p>
-          <p className="mt-2 flex items-center gap-1 text-sm">
+          <p className={cn("mt-2 flex items-center gap-1 text-sm font-medium", hero && "text-white/80")}>
             {positive ? (
-              <TrendingUp className="h-3.5 w-3.5 text-success" />
+              <TrendingUp className={cn("h-3.5 w-3.5", hero ? "text-highlight" : "text-success")} />
             ) : (
-              <TrendingDown className="h-3.5 w-3.5 text-danger" />
+              <TrendingDown className={cn("h-3.5 w-3.5", hero ? "text-white" : "text-danger")} />
             )}
-            <span className={positive ? "text-success" : "text-danger"}>
+            <span className={positive ? (hero ? "text-highlight" : "text-success") : hero ? "text-white" : "text-danger"}>
               {positive ? "+" : ""}
               {delta.toFixed(1)}%
             </span>
-            <span className="text-muted-foreground">{label}</span>
+            <span className={hero ? "text-white/65" : "text-muted-foreground"}>{label}</span>
           </p>
         </div>
         <SegmentedControl
@@ -68,9 +70,10 @@ export function SalesSummary() {
           value={period}
           options={options}
           onChange={setPeriod}
+          tone={hero ? "dark" : "light"}
         />
       </div>
-      <div className="mt-4">
+      <div className={cn("mt-5", hero && "text-highlight")}>
         <Sparkline data={series} />
       </div>
       <p className="sr-only">
