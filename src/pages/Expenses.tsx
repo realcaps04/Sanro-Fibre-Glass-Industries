@@ -44,7 +44,7 @@ export default function Expenses() {
           </Button>
         }
       />
-      <div className="mb-4 rounded-md border border-border bg-card px-4 py-3">
+      <div className="mb-4 elevated rounded-lg px-4 py-3">
         <p className="text-xs text-muted-foreground">This Month</p>
         <p className="mt-1 text-2xl font-semibold tabular-nums">{formatCurrency(monthTotal)}</p>
       </div>
@@ -56,7 +56,7 @@ export default function Expenses() {
         className="mb-4"
       />
       {visible.length ? (
-        <div className="divide-y divide-border rounded-md border border-border bg-card">
+        <div className="divide-y divide-border elevated rounded-lg">
           {visible.map((expense) => (
             <button
               key={expense.id}

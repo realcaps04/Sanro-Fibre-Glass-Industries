@@ -132,7 +132,7 @@ export default function NewBill() {
             <button
               type="button"
               onClick={() => setCustomerOpen(true)}
-              className="flex w-full items-center justify-between rounded-md border border-border bg-card px-4 py-3 text-left"
+              className="elevated flex w-full items-center justify-between rounded-lg px-4 py-3 text-left"
             >
               {customer ? (
                 <span>
@@ -158,7 +158,7 @@ export default function NewBill() {
               </button>
             </div>
             {items.length ? (
-              <ul className="divide-y divide-border rounded-md border border-border bg-card">
+              <ul className="elevated divide-y divide-border rounded-lg">
                 {items.map((item) => (
                   <li key={item.productId} className="flex items-center gap-3 px-4 py-3">
                     <div className="min-w-0 flex-1">

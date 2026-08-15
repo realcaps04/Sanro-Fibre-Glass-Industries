@@ -32,7 +32,7 @@ export function RecentTransactions() {
         </Link>
       </div>
       {recent.length ? (
-        <div className="divide-y divide-border rounded-lg bg-card">
+        <div className="elevated divide-y divide-border rounded-lg">
           {recent.map((tx) => {
             const inflow = tx.direction === "in";
             return (

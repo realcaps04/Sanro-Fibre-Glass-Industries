@@ -58,7 +58,7 @@ export function BottomSheet({
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          "relative z-10 flex max-h-[88vh] w-full flex-col rounded-t-lg border border-border bg-card pb-[env(safe-area-inset-bottom)] animate-sheet-in",
+          "relative z-10 flex max-h-[88vh] w-full flex-col rounded-t-lg bg-card pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-hero)] animate-sheet-in",
           className,
         )}
       >

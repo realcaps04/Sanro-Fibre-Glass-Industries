@@ -68,7 +68,7 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          "relative z-10 flex max-h-[min(36rem,calc(100vh-2rem))] w-full max-w-lg flex-col overflow-hidden rounded-lg border border-border bg-card animate-sheet-in",
+          "relative z-10 flex max-h-[min(36rem,calc(100vh-2rem))] w-full max-w-lg flex-col overflow-hidden rounded-lg bg-card shadow-[var(--shadow-hero)] animate-sheet-in",
           className,
         )}
       >

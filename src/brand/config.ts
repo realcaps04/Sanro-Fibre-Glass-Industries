@@ -3,7 +3,7 @@ export const brandConfig = {
   legalName: "Sanro Fibre Glass Industries",
   tagline: "Designed to open possibilities",
   logo: "/logo.png",
-  primaryColor: "#06402B",
+  primaryColor: "#003f34",
   secondaryColor: "#8B5A3C",
   highlightColor: "#B2FFD6",
   address: "Thankamany – Thopramkudy Road, Idukki, Kerala 685609",

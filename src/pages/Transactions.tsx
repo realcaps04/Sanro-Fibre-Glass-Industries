@@ -83,7 +83,7 @@ export default function Transactions() {
         actions={
           <button
             type="button"
-            className="rounded-md border border-border bg-card p-2"
+            className="elevated-soft rounded-lg p-2"
             aria-label="Open filters"
             onClick={() => setFilterOpen(true)}
           >
@@ -123,7 +123,7 @@ export default function Transactions() {
         ))}
       </div>
       {visible.length ? (
-        <div className="divide-y divide-border rounded-md border border-border bg-card">
+        <div className="elevated divide-y divide-border rounded-lg">
           {visible.map((tx) => {
             const inflow = tx.direction === "in";
             return (

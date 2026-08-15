@@ -45,7 +45,7 @@ export function SalesSummary({ variant = "card" }: { variant?: "card" | "hero" }
     period === "today" ? "Today's Sales" : period === "7d" ? "7-day Sales" : "30-day Sales";
 
   return (
-    <section className={cn(!hero && "rounded-lg border border-border bg-card px-4 py-4")}>
+    <section className={cn(!hero && "elevated rounded-lg px-4 py-4")}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className={cn("section-label", hero && "text-white/70")}>{periodTitle}</p>

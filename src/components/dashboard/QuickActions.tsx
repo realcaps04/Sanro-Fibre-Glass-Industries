@@ -46,8 +46,8 @@ export function QuickActions({
             className={cn(
               "h-12 rounded-full text-sm font-semibold tracking-[-0.02em]",
               action.accent
-                ? "bg-highlight text-highlight-foreground"
-                : "bg-white/12 text-white hover:bg-white/18",
+                ? "bg-highlight text-highlight-foreground shadow-[0_10px_22px_rgb(178_255_214/0.28)]"
+                : "bg-white/12 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.16),0_8px_18px_rgb(0_0_0/0.14)] hover:bg-white/18",
             )}
           >
             {action.label}
@@ -68,9 +68,9 @@ export function QuickActions({
               key={action.key}
               type="button"
               onClick={handlers[action.key]}
-              className="flex flex-col items-center gap-2 rounded-2xl bg-muted px-2 py-3 text-center"
+              className="flex flex-col items-center gap-2 rounded-2xl bg-card px-2 py-3 text-center elevated-soft"
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-foreground">
+              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-primary">
                 <Icon className="h-5 w-5" strokeWidth={1.75} />
               </span>
               <span className="text-[11px] font-semibold tracking-[-0.01em]">{action.label}</span>

@@ -51,7 +51,7 @@ export default function Settings() {
     <div className="space-y-6">
       <PageHeader title="Settings" />
 
-      <section className="rounded-md border border-border bg-card p-4">
+      <section className="elevated rounded-lg p-4">
         <h2 className="text-sm font-semibold">Business Profile</h2>
         <div className="mt-4 space-y-3">
           <div>
@@ -125,7 +125,7 @@ export default function Settings() {
         </div>
       </section>
 
-      <section className="rounded-md border border-border bg-card p-4">
+      <section className="elevated rounded-lg p-4">
         <h2 className="text-sm font-semibold">Invoice Settings</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div>
@@ -168,7 +168,7 @@ export default function Settings() {
         </Button>
       </section>
 
-      <section className="rounded-md border border-border bg-card p-4">
+      <section className="elevated rounded-lg p-4">
         <h2 className="text-sm font-semibold">Tax Settings</h2>
         <div className="mt-4 max-w-xs">
           <Label htmlFor="tax-rate">GST rate (%)</Label>
@@ -189,7 +189,7 @@ export default function Settings() {
         </Button>
       </section>
 
-      <section className="rounded-md border border-border bg-card p-4">
+      <section className="elevated rounded-lg p-4">
         <h2 className="text-sm font-semibold">Payment Methods</h2>
         <div className="mt-4 grid grid-cols-2 gap-2">
           {(Object.keys(paymentLabel) as PaymentMethod[]).map((method) => (
@@ -211,7 +211,7 @@ export default function Settings() {
         </Button>
       </section>
 
-      <section className="rounded-md border border-border bg-card p-4">
+      <section className="elevated rounded-lg p-4">
         <h2 className="text-sm font-semibold">Appearance</h2>
         <div className="mt-4 max-w-xs">
           <Label htmlFor="theme">Theme</Label>
@@ -232,7 +232,7 @@ export default function Settings() {
         </div>
       </section>
 
-      <section className="rounded-md border border-border bg-card p-4">
+      <section className="elevated rounded-lg p-4">
         <h2 className="text-sm font-semibold">About</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Sanro Doors billing app · frontend preview. Data is stored on this device until

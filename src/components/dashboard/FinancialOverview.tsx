@@ -15,7 +15,7 @@ export function FinancialOverview() {
   ];
 
   return (
-    <section className="rounded-lg bg-card px-1 py-1">
+    <section className="elevated rounded-lg px-1 py-1">
       <div className="px-4 pt-4 pb-2">
         <h2 className="section-label">Financial Overview</h2>
       </div>

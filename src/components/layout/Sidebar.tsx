@@ -13,7 +13,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "sticky top-0 hidden h-dvh shrink-0 flex-col bg-sidebar text-sidebar-foreground print:hidden lg:flex",
+        "sticky top-0 hidden h-dvh shrink-0 flex-col hero-gradient text-sidebar-foreground print:hidden lg:flex",
         sidebarCollapsed ? "w-[72px]" : "w-[232px]",
       )}
     >

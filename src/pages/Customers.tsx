@@ -47,7 +47,7 @@ export default function Customers() {
         className="mb-4"
       />
       {visible.length ? (
-        <div className="divide-y divide-border rounded-md border border-border bg-card">
+        <div className="elevated divide-y divide-border rounded-lg">
           {visible.map((customer) => {
             const outstanding = customerOutstanding(customer.id, invoices);
             return (

@@ -80,7 +80,7 @@ export default function Billing() {
           { label: "Paid", value: summary.paid },
           { label: "Outstanding", value: summary.outstanding },
         ].map((item) => (
-          <div key={item.label} className="rounded-md border border-border bg-card px-3 py-3">
+          <div key={item.label} className="elevated rounded-lg px-3 py-3">
             <p className="text-xs text-muted-foreground">{item.label}</p>
             <p className="mt-1 text-sm font-semibold tabular-nums">{formatCurrency(item.value)}</p>
           </div>

@@ -43,7 +43,7 @@ export function BillSummary({
   ];
 
   return (
-    <section className="rounded-md border border-border bg-card p-4">
+    <section className="elevated rounded-lg p-4">
       <h2 className="mb-4 text-sm font-medium text-muted-foreground">Invoice Summary</h2>
       <div className="space-y-3 text-sm">
         {rows.slice(0, 1).map((row) => (

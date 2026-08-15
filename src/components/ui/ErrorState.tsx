@@ -8,7 +8,7 @@ interface ErrorStateProps {
 
 export function ErrorState({ title, description, onRetry }: ErrorStateProps) {
   return (
-    <div className="rounded-md border border-border bg-card px-5 py-8 text-center">
+    <div className="elevated rounded-lg px-5 py-8 text-center">
       <h2 className="text-base font-semibold text-foreground">{title}</h2>
       {description ? (
         <p className="mt-1 text-sm text-muted-foreground">{description}</p>

@@ -9,7 +9,7 @@ export default function More() {
   return (
     <div>
       <PageHeader title="More" />
-      <div className="divide-y divide-border rounded-md border border-border bg-card">
+      <div className="elevated divide-y divide-border rounded-lg">
         {items.map((item) => {
           const Icon = item.icon;
           return (

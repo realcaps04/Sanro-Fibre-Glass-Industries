@@ -1,7 +1,5 @@
-import { FinancialOverview } from "@/components/dashboard/FinancialOverview";
-import { QuickActions } from "@/components/dashboard/QuickActions";
-import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
-import { SalesSummary } from "@/components/dashboard/SalesSummary";
+import { CategoryGrid } from "@/components/dashboard/CategoryGrid";
+import { FeaturedCard } from "@/components/dashboard/FeaturedCard";
 import { CustomerForm } from "@/components/customers/CustomerForm";
 import { ExpenseSheet } from "@/components/expenses/ExpenseSheet";
 import { PaymentSheet } from "@/components/payments/PaymentSheet";
@@ -10,18 +8,20 @@ import { Overlay } from "@/components/ui/Overlay";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { useData } from "@/context/DataContext";
-import { formatLongDate, greeting } from "@/lib/dates";
-import { Bell } from "lucide-react";
+import { formatCurrency } from "@/lib/currency";
+import { greeting } from "@/lib/dates";
+import { ArrowDownLeft, ArrowUpRight, Bell, Ellipsis, Moon, Sun } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
-  const { loading, error, refresh, invoices, products } = useData();
+  const { loading, error, refresh, invoices, products, settings, updateSettings } = useData();
   const navigate = useNavigate();
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [expenseOpen, setExpenseOpen] = useState(false);
   const [customerOpen, setCustomerOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   const alerts = useMemo(() => {
     const pending = invoices.filter(
@@ -32,77 +32,107 @@ export default function Dashboard() {
   }, [invoices, products]);
 
   const hasAlerts = alerts.pending.length + alerts.lowStock.length > 0;
+  const dark = settings.appearance.theme === "dark";
 
   if (loading) return <DashboardSkeleton />;
   if (error) return <ErrorState title={error} onRetry={() => void refresh()} />;
 
   return (
-    <div className="lg:space-y-6">
-      <section className="bg-primary px-5 pt-5 pb-14 text-primary-foreground lg:rounded-3xl lg:pb-8">
+    <div className="mx-auto w-full max-w-[430px] lg:max-w-none">
+      <section className="hero-gradient px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-16 text-white">
         <header className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <img
               src={brandConfig.logo}
               alt=""
-              className="h-11 w-11 shrink-0 rounded-2xl bg-white object-contain"
+              className="h-11 w-11 shrink-0 rounded-full bg-white object-contain shadow-[0_8px_20px_rgb(0_0_0/0.18)]"
             />
             <div className="min-w-0">
-              <p className="text-sm font-medium text-white/70">{greeting()}</p>
-              <h1 className="truncate text-lg font-semibold tracking-[-0.03em] text-white">
+              <p className="text-[13px] font-medium text-white/75">{greeting()}!</p>
+              <h1 className="truncate text-[17px] font-semibold tracking-[-0.03em]">
                 {brandConfig.businessName}
               </h1>
             </div>
           </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="glass-circle flex h-11 w-11 items-center justify-center rounded-full"
+              aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+              onClick={() =>
+                void updateSettings({ appearance: { theme: dark ? "light" : "dark" } })
+              }
+            >
+              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
+            <button
+              type="button"
+              className="glass-circle relative flex h-11 w-11 items-center justify-center rounded-full"
+              aria-label="Notifications"
+              onClick={() => setNotesOpen(true)}
+            >
+              <Bell className="h-4 w-4" />
+              {hasAlerts ? (
+                <span className="absolute top-2.5 right-2.5 h-1.5 w-1.5 rounded-full bg-highlight" />
+              ) : null}
+            </button>
+          </div>
+        </header>
+
+        <div className="mt-8">
+          <p className="text-[13px] text-white/70">Total Balance</p>
+          <div className="mt-1 flex items-end justify-between gap-3">
+            <p className="display-number text-white">{formatCurrency(settings.openingCash)}</p>
+            <span className="mb-1 rounded-full bg-white/12 px-3 py-1 text-[11px] font-semibold tracking-[0.08em] text-white/90 backdrop-blur-md">
+              INR
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-7 flex items-center gap-2.5">
           <button
             type="button"
-            className="relative rounded-2xl bg-white/12 p-2.5 text-white"
-            aria-label="Notifications"
-            onClick={() => setNotesOpen(true)}
+            className="btn-glass flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-sm font-semibold"
+            onClick={() => setPaymentOpen(true)}
           >
-            <Bell className="h-4 w-4" />
-            {hasAlerts ? (
-              <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-highlight" />
-            ) : null}
+            <ArrowDownLeft className="h-4 w-4" />
+            Request
           </button>
-        </header>
-        <p className="mt-3 text-xs font-medium tracking-[0.04em] text-white/55">
-          {formatLongDate()}
-        </p>
-        <div className="mt-6">
-          <SalesSummary variant="hero" />
-        </div>
-        <div className="mt-6">
-          <QuickActions
-            variant="hero"
-            onNewBill={() => navigate("/billing/new")}
-            onPayment={() => setPaymentOpen(true)}
-            onExpense={() => setExpenseOpen(true)}
-            onCustomer={() => setCustomerOpen(true)}
-          />
+          <button
+            type="button"
+            className="btn-lime flex h-12 flex-[1.15] items-center justify-center gap-2 rounded-full text-sm font-semibold"
+            onClick={() => navigate("/billing/new")}
+          >
+            Transfer
+            <ArrowUpRight className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            className="btn-glass flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
+            aria-label="More actions"
+            onClick={() => setMoreOpen(true)}
+          >
+            <Ellipsis className="h-4 w-4" />
+          </button>
         </div>
       </section>
 
-      <section className="-mt-8 space-y-5 rounded-t-[28px] bg-background px-5 pt-6 pb-2 lg:mt-0 lg:rounded-3xl lg:px-0 lg:pt-0">
-        <QuickActions
-          onNewBill={() => navigate("/billing/new")}
-          onPayment={() => setPaymentOpen(true)}
-          onExpense={() => setExpenseOpen(true)}
-          onCustomer={() => setCustomerOpen(true)}
-        />
-        <FinancialOverview />
-        <RecentTransactions />
+      <section className="relative z-10 -mt-10 space-y-7 rounded-t-[36px] bg-[#f0f7f4] px-5 pt-7 pb-4 dark:bg-background">
+        <CategoryGrid onPayment={() => setPaymentOpen(true)} />
+        <FeaturedCard />
       </section>
 
       <PaymentSheet open={paymentOpen} onClose={() => setPaymentOpen(false)} />
       <ExpenseSheet open={expenseOpen} onClose={() => setExpenseOpen(false)} />
       <CustomerForm open={customerOpen} onClose={() => setCustomerOpen(false)} />
+
       <Overlay open={notesOpen} onClose={() => setNotesOpen(false)} title="Notifications">
-        <div className="space-y-4">
+        <div className="space-y-3">
           {alerts.pending.slice(0, 4).map((invoice) => (
             <Link
               key={invoice.id}
               to={`/billing/${invoice.id}`}
-              className="block rounded-lg bg-muted px-3 py-3"
+              className="block rounded-[20px] bg-muted px-3 py-3"
               onClick={() => setNotesOpen(false)}
             >
               <p className="text-sm font-semibold">
@@ -115,7 +145,7 @@ export default function Dashboard() {
             <Link
               key={product.id}
               to="/products"
-              className="block rounded-lg bg-muted px-3 py-3"
+              className="block rounded-[20px] bg-muted px-3 py-3"
               onClick={() => setNotesOpen(false)}
             >
               <p className="text-sm font-semibold">{product.name} is low on stock</p>
@@ -123,10 +153,43 @@ export default function Dashboard() {
             </Link>
           ))}
           {!hasAlerts ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">
-              You are all caught up.
-            </p>
+            <p className="py-6 text-center text-sm text-muted-foreground">You are all caught up.</p>
           ) : null}
+        </div>
+      </Overlay>
+
+      <Overlay open={moreOpen} onClose={() => setMoreOpen(false)} title="More">
+        <div className="grid gap-2">
+          <button
+            type="button"
+            className="rounded-[18px] bg-muted px-4 py-3 text-left text-sm font-semibold"
+            onClick={() => {
+              setMoreOpen(false);
+              setExpenseOpen(true);
+            }}
+          >
+            Add expense
+          </button>
+          <button
+            type="button"
+            className="rounded-[18px] bg-muted px-4 py-3 text-left text-sm font-semibold"
+            onClick={() => {
+              setMoreOpen(false);
+              setCustomerOpen(true);
+            }}
+          >
+            Add customer
+          </button>
+          <button
+            type="button"
+            className="rounded-[18px] bg-muted px-4 py-3 text-left text-sm font-semibold"
+            onClick={() => {
+              setMoreOpen(false);
+              navigate("/products");
+            }}
+          >
+            Products
+          </button>
         </div>
       </Overlay>
     </div>

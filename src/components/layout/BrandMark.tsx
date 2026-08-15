@@ -14,7 +14,7 @@ export function BrandMark({
         src={brandConfig.logo}
         alt=""
         className={cn(
-          "shrink-0 object-contain bg-white",
+          "shrink-0 bg-white object-contain shadow-[0_8px_18px_rgb(0_0_0/0.16)]",
           compact ? "h-9 w-9 rounded-xl" : "h-11 w-11 rounded-2xl",
         )}
       />

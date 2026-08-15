@@ -36,7 +36,7 @@ export default function CustomerDetails() {
   return (
     <div>
       <PageHeader title={customer.name} backTo="/customers" />
-      <section className="rounded-md border border-border bg-card px-4 py-4 text-sm">
+      <section className="elevated rounded-lg px-4 py-4 text-sm">
         <p className="text-muted-foreground">Phone</p>
         <p className="mt-0.5 font-medium">{customer.phone}</p>
         <p className="mt-3 text-muted-foreground">Address</p>
@@ -49,11 +49,11 @@ export default function CustomerDetails() {
         ) : null}
       </section>
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <div className="rounded-md border border-border bg-card px-4 py-3">
+        <div className="elevated rounded-lg px-4 py-3">
           <p className="text-xs text-muted-foreground">Outstanding</p>
           <p className="mt-1 text-lg font-semibold tabular-nums">{formatCurrency(outstanding)}</p>
         </div>
-        <div className="rounded-md border border-border bg-card px-4 py-3">
+        <div className="elevated rounded-lg px-4 py-3">
           <p className="text-xs text-muted-foreground">Total Purchases</p>
           <p className="mt-1 text-lg font-semibold tabular-nums">{formatCurrency(purchases)}</p>
         </div>
@@ -71,7 +71,7 @@ export default function CustomerDetails() {
       </div>
       <h2 className="mt-6 mb-3 text-sm font-medium text-muted-foreground">Transactions</h2>
       {related.length ? (
-        <div className="divide-y divide-border rounded-md border border-border bg-card">
+        <div className="divide-y divide-border elevated rounded-lg">
           {related.map((invoice) => (
             <InvoiceCard key={invoice.id} invoice={invoice} />
           ))}

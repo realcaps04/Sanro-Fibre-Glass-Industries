@@ -104,15 +104,15 @@ export default function Reports() {
     <div>
       <PageHeader title="Reports" description="Figures are calculated from local billing data." />
       <div className="mb-5 grid grid-cols-2 gap-2 lg:grid-cols-4">
-        <div className="rounded-md border border-border bg-card px-3 py-3">
+        <div className="elevated rounded-lg px-3 py-3">
           <p className="text-xs text-muted-foreground">Today</p>
           <p className="mt-1 font-semibold tabular-nums">{formatCurrency(sales)}</p>
         </div>
-        <div className="rounded-md border border-border bg-card px-3 py-3">
+        <div className="elevated rounded-lg px-3 py-3">
           <p className="text-xs text-muted-foreground">Receivables</p>
           <p className="mt-1 font-semibold tabular-nums">{formatCurrency(receivablesTotal(invoices))}</p>
         </div>
-        <div className="rounded-md border border-border bg-card px-3 py-3">
+        <div className="elevated rounded-lg px-3 py-3">
           <p className="text-xs text-muted-foreground">Payments</p>
           <p className="mt-1 font-semibold tabular-nums">
             {formatCurrency(
@@ -122,7 +122,7 @@ export default function Reports() {
             )}
           </p>
         </div>
-        <div className="rounded-md border border-border bg-card px-3 py-3">
+        <div className="elevated rounded-lg px-3 py-3">
           <p className="text-xs text-muted-foreground">Top method</p>
           <p className="mt-1 font-semibold">
             {paymentLabel[
@@ -133,7 +133,7 @@ export default function Reports() {
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         {reports.map((report) => (
-          <section key={report.title} className="rounded-md border border-border bg-card p-4">
+          <section key={report.title} className="elevated rounded-lg p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-sm font-medium">{report.title}</h2>

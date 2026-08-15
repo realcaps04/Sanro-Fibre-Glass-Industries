@@ -77,7 +77,7 @@ export default function Products() {
         ))}
       </div>
       {visible.length ? (
-        <div className="divide-y divide-border rounded-md border border-border bg-card">
+        <div className="elevated divide-y divide-border rounded-lg">
           {visible.map((product) => (
             <div key={product.id} className="flex items-start justify-between gap-3 px-4 py-3">
               <div>

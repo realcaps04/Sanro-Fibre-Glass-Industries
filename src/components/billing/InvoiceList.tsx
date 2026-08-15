@@ -20,7 +20,7 @@ export function InvoiceList({ invoices }: { invoices: Invoice[] }) {
   }
 
   return (
-    <div className="divide-y divide-border rounded-md border border-border bg-card">
+    <div className="elevated divide-y divide-border rounded-lg">
       {invoices.map((invoice) => (
         <InvoiceCard key={invoice.id} invoice={invoice} />
       ))}
