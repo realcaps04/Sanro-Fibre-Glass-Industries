@@ -258,5 +258,6 @@ export function fromCreateInput(
     amountPaid: input.amountPaid,
     paymentMethod: input.paymentMethod,
     notes: input.notes,
+    billKind: input.billKind,
   });
 }

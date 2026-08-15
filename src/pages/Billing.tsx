@@ -1,5 +1,5 @@
 import { InvoiceList } from "@/components/billing/InvoiceList";
-import { NewBillSheet } from "@/components/billing/NewBillSheet";
+import { NewBillFlow } from "@/components/billing/NewBillFlow";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -114,7 +114,7 @@ export default function Billing({ nonGst = false }: { nonGst?: boolean }) {
         ))}
       </div>
       <InvoiceList invoices={visible} />
-      <NewBillSheet
+      <NewBillFlow
         open={billOpen}
         onClose={() => setBillOpen(false)}
         nonGst={nonGst}

@@ -6,19 +6,34 @@ import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
 import { calculateBill, lineAmount } from "@/lib/calculations";
+import { billKindCategories, billKindLabel } from "@/lib/billing";
 import { formatCurrency } from "@/lib/currency";
-import type { Customer, InvoiceLineItem, PaymentMethod, Product } from "@/types";
+import type { BillKind, Customer, InvoiceLineItem, PaymentMethod, Product } from "@/types";
 import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 interface NewBillSheetProps {
   open: boolean;
+  kind: BillKind;
   onClose: () => void;
   onCreated?: (invoiceId: string) => void;
   nonGst?: boolean;
 }
 
-export function NewBillSheet({ open, onClose, onCreated, nonGst = false }: NewBillSheetProps) {
+function sheetTitle(kind: BillKind, nonGst: boolean) {
+  if (nonGst) {
+    return kind === "waterproofing" ? "New Non GST Water proof Bill" : "New Non GST Door Bill";
+  }
+  return kind === "waterproofing" ? "New Water proof Bill" : "New Door Bill";
+}
+
+export function NewBillSheet({
+  open,
+  kind,
+  onClose,
+  onCreated,
+  nonGst = false,
+}: NewBillSheetProps) {
   const { settings, createInvoice } = useData();
   const { toast } = useToast();
   const taxRate = nonGst ? 0 : settings.invoice.taxRate;
@@ -113,6 +128,7 @@ export function NewBillSheet({ open, onClose, onCreated, nonGst = false }: NewBi
         amountPaid: paymentMethod === "credit" ? 0 : amountPaid,
         paymentMethod,
         notes: settings.invoice.defaultNotes,
+        billKind: kind,
       });
       toast("Invoice created successfully", "success");
       onClose();
@@ -126,7 +142,7 @@ export function NewBillSheet({ open, onClose, onCreated, nonGst = false }: NewBi
 
   return (
     <>
-      <BottomSheet open={open} onClose={onClose} title={nonGst ? "New Non GST Bill" : "New Bill"}>
+      <BottomSheet open={open} onClose={onClose} title={sheetTitle(kind, nonGst)}>
         <div className="space-y-5">
           <section>
             <h3 className="mb-2 text-sm font-medium text-muted-foreground">Customer</h3>
@@ -229,6 +245,8 @@ export function NewBillSheet({ open, onClose, onCreated, nonGst = false }: NewBi
         open={productOpen}
         onClose={() => setProductOpen(false)}
         onAdd={addProduct}
+        allowedCategories={billKindCategories[kind]}
+        title={`Add ${billKindLabel[kind]} product`}
       />
     </>
   );

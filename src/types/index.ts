@@ -14,6 +14,7 @@ export type ExpenseCategory =
   | "other";
 export type AppearanceTheme = "light" | "dark" | "system";
 export type SalesPeriod = "today" | "7d" | "30d";
+export type BillKind = "doors" | "waterproofing";
 
 export interface Customer {
   id: string;
@@ -65,6 +66,7 @@ export interface Invoice {
   paymentMethod: PaymentMethod;
   status: InvoiceStatus;
   notes?: string;
+  billKind?: BillKind;
   createdAt: string;
 }
 
@@ -78,6 +80,7 @@ export interface CreateInvoiceInput {
   paymentMethod: PaymentMethod;
   notes?: string;
   date?: string;
+  billKind?: BillKind;
 }
 
 export interface Transaction {

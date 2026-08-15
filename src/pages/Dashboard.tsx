@@ -1,6 +1,6 @@
 import { CategoryGrid } from "@/components/dashboard/CategoryGrid";
 import { FeaturedCard } from "@/components/dashboard/FeaturedCard";
-import { NewBillSheet } from "@/components/billing/NewBillSheet";
+import { NewBillFlow } from "@/components/billing/NewBillFlow";
 import { PaymentSheet } from "@/components/payments/PaymentSheet";
 import { brandConfig } from "@/brand/config";
 import { Overlay } from "@/components/ui/Overlay";
@@ -104,7 +104,7 @@ export default function Dashboard() {
       </section>
 
       <PaymentSheet open={paymentOpen} onClose={() => setPaymentOpen(false)} />
-      <NewBillSheet
+      <NewBillFlow
         open={billOpen}
         onClose={() => setBillOpen(false)}
         onCreated={(invoiceId) => navigate(`/billing/${invoiceId}`)}

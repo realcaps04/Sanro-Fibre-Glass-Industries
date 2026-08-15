@@ -7,10 +7,9 @@ import { productCategoryLabel } from "@/lib/labels";
 import { matchesQuery } from "@/lib/search";
 import { cn } from "@/lib/cn";
 import type { Product, ProductCategory } from "@/types";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-const categories: Array<ProductCategory | "all"> = [
-  "all",
+const allCategories: ProductCategory[] = [
   "doors",
   "windows",
   "accessories",
@@ -22,27 +21,50 @@ interface ProductSelectorProps {
   open: boolean;
   onClose: () => void;
   onAdd: (product: Product, quantity: number) => void;
+  allowedCategories?: ProductCategory[];
+  title?: string;
 }
 
-export function ProductSelector({ open, onClose, onAdd }: ProductSelectorProps) {
+export function ProductSelector({
+  open,
+  onClose,
+  onAdd,
+  allowedCategories,
+  title = "Add Product",
+}: ProductSelectorProps) {
   const { products } = useData();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<ProductCategory | "all">("all");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const scopedCategories = allowedCategories ?? allCategories;
+  const chips: Array<ProductCategory | "all"> =
+    scopedCategories.length > 1 ? ["all", ...scopedCategories] : scopedCategories;
+
+  useEffect(() => {
+    if (!open) return;
+    setQuery("");
+    setCategory("all");
+    setQuantities({});
+  }, [open]);
+
+  const catalog = useMemo(
+    () => products.filter((product) => scopedCategories.includes(product.category)),
+    [products, scopedCategories],
+  );
 
   const filtered = useMemo(
     () =>
-      products.filter((product) => {
+      catalog.filter((product) => {
         const matchesCategory = category === "all" || product.category === category;
         return (
           matchesCategory && matchesQuery(query, product.name, product.sku, product.description)
         );
       }),
-    [category, products, query],
+    [catalog, category, query],
   );
 
   return (
-    <Overlay open={open} onClose={onClose} title="Add Product" nested>
+    <Overlay open={open} onClose={onClose} title={title} nested>
       <div className="space-y-4">
         <SearchInput
           value={query}
@@ -50,23 +72,25 @@ export function ProductSelector({ open, onClose, onAdd }: ProductSelectorProps) 
           placeholder="Search products"
           aria-label="Search products"
         />
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {categories.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => setCategory(item)}
-              className={cn(
-                "shrink-0 rounded-md border px-3 py-1.5 text-sm",
-                category === item
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground",
-              )}
-            >
-              {item === "all" ? "All" : productCategoryLabel[item]}
-            </button>
-          ))}
-        </div>
+        {chips.length > 1 ? (
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {chips.map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setCategory(item)}
+                className={cn(
+                  "shrink-0 rounded-md border px-3 py-1.5 text-sm",
+                  category === item
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card text-muted-foreground",
+                )}
+              >
+                {item === "all" ? "All" : productCategoryLabel[item]}
+              </button>
+            ))}
+          </div>
+        ) : null}
         <ul className="divide-y divide-border rounded-md border border-border">
           {filtered.map((product) => {
             const qty = quantities[product.id] ?? 1;
