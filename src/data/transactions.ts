@@ -1,4 +1,3 @@
-import { mockInvoices } from "@/data/invoices";
 import type { Expense, Invoice, Transaction } from "@/types";
 
 function saleFromInvoice(invoice: Invoice): Transaction {
@@ -52,12 +51,20 @@ function expenseTx(expense: Expense): Transaction {
   };
 }
 
-export const mockTransactions: Transaction[] = [
-  ...mockInvoices.filter((invoice) => invoice.status !== "cancelled").map(saleFromInvoice),
-  ...mockInvoices
-    .filter((invoice) => invoice.status === "partial")
-    .map(paymentFromInvoice)
-    .filter((tx): tx is Transaction => tx !== null),
+export const dummyTransactionIds = [
+  "txn_sale_inv_1045",
+  "txn_sale_inv_1046",
+  "txn_pay_inv_1045",
+  "txn_pay_inv_1046",
+  "txn_exp_transport",
+  "txn_exp_power",
+  "txn_exp_materials",
+  "txn_exp_wages",
+  "txn_exp_rent",
+  "txn_exp_fuel",
+  "txn_exp_maint",
 ];
+
+export const mockTransactions: Transaction[] = [];
 
 export { saleFromInvoice, paymentFromInvoice, expenseTx };

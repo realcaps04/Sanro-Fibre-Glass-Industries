@@ -57,6 +57,8 @@ export const dummyInvoiceIds = [
   "inv_1033",
 ];
 
+export const seedInvoiceIds = ["inv_1045", "inv_1046"];
+
 export const mockInvoices: Invoice[] = [
   buildInvoice({
     id: "inv_1045",

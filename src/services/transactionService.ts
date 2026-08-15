@@ -1,6 +1,6 @@
 import { dummyExpenseIds } from "@/data/expenses";
-import { dummyInvoiceIds } from "@/data/invoices";
-import { expenseTx, mockTransactions, saleFromInvoice } from "@/data/transactions";
+import { dummyInvoiceIds, seedInvoiceIds } from "@/data/invoices";
+import { dummyTransactionIds, expenseTx, saleFromInvoice } from "@/data/transactions";
 import { createId, matchesQuery } from "@/lib/search";
 import { createCollection } from "@/services/collection";
 import type {
@@ -12,22 +12,23 @@ import type {
   TransactionType,
 } from "@/types";
 
-const collection = createCollection("transactions", mockTransactions);
+const collection = createCollection("transactions", []);
+
+function isDummyTransaction(tx: Transaction): boolean {
+  if (dummyTransactionIds.includes(tx.id)) return true;
+  if (tx.invoiceId && dummyInvoiceIds.includes(tx.invoiceId)) return true;
+  if (tx.expenseId && dummyExpenseIds.includes(tx.expenseId)) return true;
+  if (tx.id.startsWith("txn_sale_inv_") || tx.id.startsWith("txn_pay_inv_")) {
+    const invoiceId = tx.invoiceId ?? tx.id.replace(/^txn_(?:sale|pay)_/, "");
+    if (invoiceId && seedInvoiceIds.includes(invoiceId)) return true;
+  }
+  return false;
+}
 
 function readTransactions(): Transaction[] {
   const stored = collection.read();
-  const withoutDummy = stored.filter((tx) => {
-    if (tx.invoiceId && dummyInvoiceIds.includes(tx.invoiceId)) return false;
-    if (tx.expenseId && dummyExpenseIds.includes(tx.expenseId)) return false;
-    return true;
-  });
-  const missingSeeds = mockTransactions.filter(
-    (seed) =>
-      seed.invoiceId &&
-      !withoutDummy.some((tx) => tx.invoiceId === seed.invoiceId && tx.type === seed.type),
-  );
-  const next = [...missingSeeds, ...withoutDummy];
-  if (next.length !== stored.length || missingSeeds.length) {
+  const next = stored.filter((tx) => !isDummyTransaction(tx));
+  if (next.length !== stored.length) {
     collection.write(next);
   }
   return next;
