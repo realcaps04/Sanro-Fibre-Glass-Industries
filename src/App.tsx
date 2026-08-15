@@ -1,5 +1,5 @@
 import { AppShell } from "@/components/layout/AppShell";
-import { BootSplashHandoff, SplashScreen } from "@/components/layout/SplashScreen";
+import { BootSplashHandoff } from "@/components/layout/SplashScreen";
 import { DataProvider } from "@/context/DataContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { lazy, Suspense } from "react";
