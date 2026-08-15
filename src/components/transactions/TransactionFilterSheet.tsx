@@ -32,7 +32,7 @@ export function TransactionFilterSheet({
   };
 
   const reset = () => {
-    onChange({});
+    onChange({ from: filters.from, to: filters.to });
   };
 
   return (
@@ -88,26 +88,6 @@ export function TransactionFilterSheet({
               </option>
             ))}
           </Select>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label htmlFor="flt-from">From</Label>
-            <Input
-              id="flt-from"
-              type="date"
-              value={filters.from ?? ""}
-              onChange={(event) => update({ from: event.target.value || undefined })}
-            />
-          </div>
-          <div>
-            <Label htmlFor="flt-to">To</Label>
-            <Input
-              id="flt-to"
-              type="date"
-              value={filters.to ?? ""}
-              onChange={(event) => update({ to: event.target.value || undefined })}
-            />
-          </div>
         </div>
         <div>
           <Label htmlFor="flt-customer">Customer</Label>

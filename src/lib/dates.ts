@@ -48,6 +48,22 @@ export function startOfDay(date = new Date()): Date {
   return next;
 }
 
+export function startOfWeek(date = new Date()): Date {
+  const next = startOfDay(date);
+  const weekday = next.getDay();
+  const daysFromMonday = weekday === 0 ? 6 : weekday - 1;
+  next.setDate(next.getDate() - daysFromMonday);
+  return next;
+}
+
+export function startOfMonth(date = new Date()): Date {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+export function startOfYear(date = new Date()): Date {
+  return new Date(date.getFullYear(), 0, 1);
+}
+
 export function isSameDay(a: Date, b: Date): boolean {
   return (
     a.getFullYear() === b.getFullYear() &&

@@ -1,5 +1,6 @@
 import { PageHeader } from "@/components/layout/PageHeader";
 import { TransactionFilterSheet } from "@/components/transactions/TransactionFilterSheet";
+import { DateRangeSheet } from "@/components/ui/DateRangeSheet";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -7,7 +8,15 @@ import { PageSkeleton } from "@/components/ui/Skeleton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useData } from "@/context/DataContext";
 import { formatCurrency } from "@/lib/currency";
-import { formatDateTime, startOfDay, toISODate } from "@/lib/dates";
+import {
+  formatDate,
+  formatDateTime,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+  startOfYear,
+  toISODate,
+} from "@/lib/dates";
 import { transactionTypeLabel } from "@/lib/labels";
 import { cn } from "@/lib/cn";
 import { transactionService, type TransactionFilters } from "@/services/transactionService";
@@ -23,7 +32,15 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-type DatePreset = "today" | "week" | "month" | "custom";
+type DatePreset = "today" | "week" | "month" | "year" | "custom";
+
+const presets: Array<{ value: DatePreset; label: string }> = [
+  { value: "today", label: "Today" },
+  { value: "week", label: "This week" },
+  { value: "month", label: "This month" },
+  { value: "year", label: "This year" },
+  { value: "custom", label: "Custom" },
+];
 
 function TxIcon({ type }: { type: Transaction["type"] }) {
   if (type === "expense") return <Wallet className="h-4 w-4" />;
@@ -38,19 +55,16 @@ export default function Transactions() {
   const [preset, setPreset] = useState<DatePreset>("month");
   const [filters, setFilters] = useState<TransactionFilters>({});
   const [filterOpen, setFilterOpen] = useState(false);
+  const [rangeOpen, setRangeOpen] = useState(false);
   const [visible, setVisible] = useState<Transaction[]>([]);
 
   const dateRange = useMemo(() => {
     const now = new Date();
-    if (preset === "today") return { from: toISODate(startOfDay(now)), to: toISODate(now) };
-    if (preset === "week") {
-      const from = startOfDay(now);
-      from.setDate(now.getDate() - 6);
-      return { from: toISODate(from), to: toISODate(now) };
-    }
-    if (preset === "month") {
-      return { from: toISODate(new Date(now.getFullYear(), now.getMonth(), 1)), to: toISODate(now) };
-    }
+    const to = toISODate(now);
+    if (preset === "today") return { from: toISODate(startOfDay(now)), to };
+    if (preset === "week") return { from: toISODate(startOfWeek(now)), to };
+    if (preset === "month") return { from: toISODate(startOfMonth(now)), to };
+    if (preset === "year") return { from: toISODate(startOfYear(now)), to };
     return { from: filters.from, to: filters.to };
   }, [filters.from, filters.to, preset]);
 
@@ -98,29 +112,36 @@ export default function Transactions() {
         aria-label="Search transactions"
         className="mb-4"
       />
-      <div className="mb-4 flex gap-2 overflow-x-auto">
-        {(
-          [
-            ["today", "Today"],
-            ["week", "This Week"],
-            ["month", "This Month"],
-            ["custom", "Custom"],
-          ] as const
-        ).map(([value, label]) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => setPreset(value)}
-            className={cn(
-              "shrink-0 rounded-md border px-3 py-1.5 text-sm",
-              preset === value
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-card text-muted-foreground",
-            )}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="mb-4 grid grid-cols-3 gap-2">
+        {presets.map((item) => {
+          const customLabel =
+            item.value === "custom" && preset === "custom" && filters.from && filters.to
+              ? `${formatDate(filters.from).replace(/ \d{4}$/, "")} – ${formatDate(filters.to).replace(/ \d{4}$/, "")}`
+              : item.label;
+          return (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => {
+                if (item.value === "custom") {
+                  setRangeOpen(true);
+                  return;
+                }
+                setPreset(item.value);
+                setFilters((current) => ({ ...current, from: undefined, to: undefined }));
+              }}
+              className={cn(
+                "h-9 rounded-full border px-2 text-[12px] font-semibold tracking-[-0.02em]",
+                item.value === "custom" && "col-span-2",
+                preset === item.value
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-muted-foreground",
+              )}
+            >
+              {customLabel}
+            </button>
+          );
+        })}
       </div>
       {visible.length ? (
         <div className="elevated divide-y divide-border rounded-lg">
@@ -172,9 +193,16 @@ export default function Transactions() {
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
         filters={filters}
-        onChange={(next) => {
-          setFilters(next);
-          if (next.from || next.to) setPreset("custom");
+        onChange={setFilters}
+      />
+      <DateRangeSheet
+        open={rangeOpen}
+        onClose={() => setRangeOpen(false)}
+        from={filters.from}
+        to={filters.to}
+        onApply={(from, to) => {
+          setPreset("custom");
+          setFilters((current) => ({ ...current, from, to }));
         }}
       />
     </div>
