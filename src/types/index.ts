@@ -38,6 +38,8 @@ export interface Product {
   stock: number;
   unit: string;
   description?: string;
+  hsnCode: string;
+  gstRate: number;
 }
 
 export interface InvoiceLineItem {
@@ -47,6 +49,10 @@ export interface InvoiceLineItem {
   quantity: number;
   rate: number;
   amount: number;
+  hsnCode?: string;
+  gstRate?: number;
+  taxableAmount?: number;
+  tax?: number;
 }
 
 export interface Invoice {
@@ -58,8 +64,11 @@ export interface Invoice {
   items: InvoiceLineItem[];
   subtotal: number;
   discount: number;
+  taxableAmount?: number;
   taxRate: number;
   tax: number;
+  cgst?: number;
+  sgst?: number;
   grandTotal: number;
   amountPaid: number;
   balance: number;
@@ -152,6 +161,8 @@ export interface BillTotals {
   discount: number;
   taxableAmount: number;
   tax: number;
+  cgst: number;
+  sgst: number;
   grandTotal: number;
   amountPaid: number;
   balance: number;

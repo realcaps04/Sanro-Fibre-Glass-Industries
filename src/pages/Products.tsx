@@ -7,6 +7,7 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { useData } from "@/context/DataContext";
 import { formatCurrency } from "@/lib/currency";
+import { formatHsn, gstPercent } from "@/lib/hsn";
 import { productCategoryLabel } from "@/lib/labels";
 import { matchesQuery } from "@/lib/search";
 import { cn } from "@/lib/cn";
@@ -46,7 +47,10 @@ export default function Products() {
         const matchesFilter =
           filter === "all" ||
           (filter === "low" ? product.stock <= 5 : product.category === filter);
-        return matchesFilter && matchesQuery(query, product.name, product.sku, product.description);
+        return (
+          matchesFilter &&
+          matchesQuery(query, product.name, product.sku, product.description, product.hsnCode)
+        );
       }),
     [filter, products, query],
   );
@@ -96,6 +100,9 @@ export default function Products() {
                 <p className="font-medium">{product.name}</p>
                 <p className="text-sm text-muted-foreground">
                   SKU: {product.sku} · {productCategoryLabel[product.category]}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  HSN {formatHsn(product.hsnCode)} · GST {gstPercent(product.gstRate)}%
                 </p>
                 <p className="mt-1 text-sm font-semibold tabular-nums">
                   {formatCurrency(product.price)}

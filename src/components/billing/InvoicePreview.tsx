@@ -1,5 +1,6 @@
 import { formatCurrency } from "@/lib/currency";
 import { formatDate } from "@/lib/dates";
+import { formatHsn, gstPercent } from "@/lib/hsn";
 import { paymentLabel } from "@/lib/labels";
 import type { AppSettings, Customer, Invoice } from "@/types";
 
@@ -73,6 +74,7 @@ export function InvoicePreview({ invoice, settings, customer }: InvoicePreviewPr
           <thead>
             <tr className="border-y border-[#d9d4cb] text-left text-[10px] tracking-[0.14em] text-[#8a857c] uppercase">
               <th className="py-2 font-medium">Item</th>
+              <th className="py-2 font-medium">HSN</th>
               <th className="py-2 text-right font-medium">Qty</th>
               <th className="py-2 text-right font-medium">Rate</th>
               <th className="py-2 text-right font-medium">Amount</th>
@@ -84,6 +86,9 @@ export function InvoicePreview({ invoice, settings, customer }: InvoicePreviewPr
                 <td className="py-2.5">
                   <p className="font-medium">{item.name}</p>
                   <p className="text-[10px] text-[#8a857c]">{item.sku}</p>
+                </td>
+                <td className="py-2.5 tabular-nums text-[#5f5c56]">
+                  {item.hsnCode ? formatHsn(item.hsnCode) : "—"}
                 </td>
                 <td className="py-2.5 text-right tabular-nums">{item.quantity}</td>
                 <td className="py-2.5 text-right tabular-nums">{formatCurrency(item.rate)}</td>
@@ -102,10 +107,35 @@ export function InvoicePreview({ invoice, settings, customer }: InvoicePreviewPr
             <span className="text-[#5f5c56]">Discount</span>
             <span className="tabular-nums">{formatCurrency(invoice.discount)}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-[#5f5c56]">Tax ({Math.round(invoice.taxRate * 100)}%)</span>
-            <span className="tabular-nums">{formatCurrency(invoice.tax)}</span>
-          </div>
+          {invoice.taxRate > 0 ? (
+            <>
+              <div className="flex justify-between">
+                <span className="text-[#5f5c56]">Taxable value</span>
+                <span className="tabular-nums">{formatCurrency(invoice.taxableAmount ?? invoice.subtotal - invoice.discount)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#5f5c56]">
+                  CGST ({gstPercent(invoice.taxRate) / 2}%)
+                </span>
+                <span className="tabular-nums">
+                  {formatCurrency(invoice.cgst ?? Math.round(invoice.tax / 2))}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#5f5c56]">
+                  SGST ({gstPercent(invoice.taxRate) / 2}%)
+                </span>
+                <span className="tabular-nums">
+                  {formatCurrency(invoice.sgst ?? invoice.tax - Math.round(invoice.tax / 2))}
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="flex justify-between">
+              <span className="text-[#5f5c56]">Tax</span>
+              <span className="tabular-nums">{formatCurrency(0)}</span>
+            </div>
+          )}
           <div className="flex justify-between border-t border-[#d9d4cb] pt-2 text-sm font-semibold">
             <span>Total</span>
             <span className="tabular-nums">{formatCurrency(invoice.grandTotal)}</span>

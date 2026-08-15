@@ -7,6 +7,7 @@ import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
 import { calculateBill, lineAmount } from "@/lib/calculations";
 import { billKindCategories, billKindSearchPlaceholder } from "@/lib/billing";
+import { formatHsn } from "@/lib/hsn";
 import { formatCurrency } from "@/lib/currency";
 import type { BillKind, Customer, InvoiceLineItem, PaymentMethod, Product } from "@/types";
 import { Plus, Trash2 } from "lucide-react";
@@ -98,6 +99,8 @@ export function NewBillSheet({
           quantity,
           rate: product.price,
           amount: lineAmount(quantity, product.price),
+          hsnCode: product.hsnCode,
+          gstRate: product.gstRate,
         },
       ];
     });
@@ -171,6 +174,7 @@ export function NewBillSheet({
                         <p className="font-medium">{item.name}</p>
                         <p className="text-sm text-muted-foreground">
                           {item.quantity} × {formatCurrency(item.rate)}
+                          {item.hsnCode ? ` · HSN ${formatHsn(item.hsnCode)}` : ""}
                         </p>
                       </div>
                       <QuantityStepper

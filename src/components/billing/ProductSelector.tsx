@@ -3,6 +3,7 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { Overlay } from "@/components/ui/Overlay";
 import { useData } from "@/context/DataContext";
 import { formatCurrency } from "@/lib/currency";
+import { formatHsn, gstPercent } from "@/lib/hsn";
 import { matchesQuery } from "@/lib/search";
 import type { Product, ProductCategory } from "@/types";
 import { useEffect, useMemo, useState } from "react";
@@ -50,9 +51,15 @@ export function ProductSelector({
 
   const filtered = useMemo(
     () =>
-      catalog.filter((product) =>
-        matchesQuery(query, product.name, product.sku, product.description),
-      ),
+                  catalog.filter((product) =>
+                    matchesQuery(
+                      query,
+                      product.name,
+                      product.sku,
+                      product.description,
+                      product.hsnCode,
+                    ),
+                  ),
     [catalog, query],
   );
 
@@ -73,8 +80,9 @@ export function ProductSelector({
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{product.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {product.sku} · Stock {product.stock}
+                    {product.sku} · HSN {formatHsn(product.hsnCode)} · GST {gstPercent(product.gstRate)}%
                   </p>
+                  <p className="text-xs text-muted-foreground">Stock {product.stock}</p>
                   <p className="mt-0.5 text-sm tabular-nums">{formatCurrency(product.price)}</p>
                 </div>
                 <div className="flex flex-col items-end gap-2">

@@ -1,4 +1,5 @@
 import { calculateBill, statusFromBalances } from "@/lib/calculations";
+import { mockProducts } from "@/data/products";
 import type { CreateInvoiceInput, Invoice, InvoiceLineItem } from "@/types";
 
 let invoiceSeq = 1033;
@@ -10,11 +11,21 @@ function item(
   quantity: number,
   rate: number,
 ): InvoiceLineItem {
-  return { productId, name, sku, quantity, rate, amount: quantity * rate };
+  const product = mockProducts.find((entry) => entry.id === productId);
+  return {
+    productId,
+    name,
+    sku,
+    quantity,
+    rate,
+    amount: quantity * rate,
+    hsnCode: product?.hsnCode,
+    gstRate: product?.gstRate ?? 0.18,
+  };
 }
 
 function buildInvoice(
-  input: Omit<Invoice, "subtotal" | "tax" | "grandTotal" | "balance" | "status"> & {
+  input: Omit<Invoice, "subtotal" | "tax" | "taxableAmount" | "cgst" | "sgst" | "grandTotal" | "balance" | "status"> & {
     cancelled?: boolean;
   },
 ): Invoice {

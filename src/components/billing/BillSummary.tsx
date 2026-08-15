@@ -35,12 +35,22 @@ export function BillSummary({
   generating,
   disabled,
 }: BillSummaryProps) {
-  const rows = [
-    { label: "Subtotal", value: totals.subtotal },
-    { label: `Tax (${Math.round(taxRate * 100)}%)`, value: totals.tax },
-    { label: "Total", value: totals.grandTotal, emphasis: true },
-    { label: "Balance", value: totals.balance },
-  ];
+  const gstHalf = Math.round(taxRate * 50);
+  const rows =
+    taxRate > 0
+      ? [
+          { label: "Subtotal", value: totals.subtotal },
+          { label: "Taxable value", value: totals.taxableAmount },
+          { label: `CGST (${gstHalf}%)`, value: totals.cgst },
+          { label: `SGST (${gstHalf}%)`, value: totals.sgst },
+          { label: "Total", value: totals.grandTotal, emphasis: true },
+          { label: "Balance", value: totals.balance },
+        ]
+      : [
+          { label: "Subtotal", value: totals.subtotal },
+          { label: "Total", value: totals.grandTotal, emphasis: true },
+          { label: "Balance", value: totals.balance },
+        ];
 
   return (
     <section className="elevated rounded-lg p-4">

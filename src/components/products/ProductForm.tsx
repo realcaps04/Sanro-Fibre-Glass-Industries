@@ -6,9 +6,11 @@ import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
+import { cn } from "@/lib/cn";
+import { doorHsnPresets, formatHsn, gstPercent, waterproofHsnPresets, type HsnPreset } from "@/lib/hsn";
 import { productCategoryLabel } from "@/lib/labels";
 import type { Product, ProductCategory } from "@/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ProductFormProps {
   open: boolean;
@@ -17,24 +19,59 @@ interface ProductFormProps {
 
 const categories = Object.keys(productCategoryLabel) as ProductCategory[];
 
+const emptyForm = (): Omit<Product, "id"> => ({
+  name: "",
+  sku: "",
+  category: "doors",
+  price: 0,
+  stock: 0,
+  unit: "pcs",
+  description: "",
+  hsnCode: doorHsnPresets[0].hsnCode,
+  gstRate: doorHsnPresets[0].gstRate,
+});
+
 export function ProductForm({ open, onClose }: ProductFormProps) {
   const { addProduct } = useData();
   const { toast } = useToast();
-  const [form, setForm] = useState<Omit<Product, "id">>({
-    name: "",
-    sku: "",
-    category: "doors",
-    price: 0,
-    stock: 0,
-    unit: "pcs",
-    description: "",
-  });
+  const [form, setForm] = useState(emptyForm);
+  const [hsnKind, setHsnKind] = useState<HsnPreset["id"]>(doorHsnPresets[0].id);
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const presets = form.category === "waterproofing" ? waterproofHsnPresets : doorHsnPresets;
+
+  useEffect(() => {
+    if (!open) return;
+    setForm(emptyForm());
+    setHsnKind(doorHsnPresets[0].id);
+    setPrice("");
+    setStock("");
+  }, [open]);
+
+  const applyPreset = (preset: HsnPreset) => {
+    setHsnKind(preset.id);
+    setForm((current) => ({
+      ...current,
+      hsnCode: preset.hsnCode,
+      gstRate: preset.gstRate,
+    }));
+  };
+
+  const changeCategory = (category: ProductCategory) => {
+    const nextPresets = category === "waterproofing" ? waterproofHsnPresets : doorHsnPresets;
+    setHsnKind(nextPresets[0].id);
+    setForm((current) => ({
+      ...current,
+      category,
+      hsnCode: nextPresets[0].hsnCode,
+      gstRate: nextPresets[0].gstRate,
+    }));
+  };
+
   const submit = async () => {
-    if (!form.name.trim() || !form.sku.trim() || !price) return;
+    if (!form.name.trim() || !form.sku.trim() || !price || !form.hsnCode) return;
     setSubmitting(true);
     try {
       await addProduct({
@@ -43,20 +80,11 @@ export function ProductForm({ open, onClose }: ProductFormProps) {
         sku: form.sku.trim().toUpperCase(),
         price: Number(price),
         stock: Number(stock) || 0,
+        hsnCode: form.hsnCode.replace(/\s/g, ""),
+        gstRate: form.gstRate,
       });
       toast("Product added", "success");
       onClose();
-      setForm({
-        name: "",
-        sku: "",
-        category: "doors",
-        price: 0,
-        stock: 0,
-        unit: "pcs",
-        description: "",
-      });
-      setPrice("");
-      setStock("");
     } catch {
       toast("Unable to add product", "danger");
     } finally {
@@ -89,12 +117,7 @@ export function ProductForm({ open, onClose }: ProductFormProps) {
           <Select
             id="prd-cat"
             value={form.category}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                category: event.target.value as ProductCategory,
-              }))
-            }
+            onChange={(event) => changeCategory(event.target.value as ProductCategory)}
           >
             {categories.map((category) => (
               <option key={category} value={category}>
@@ -103,9 +126,53 @@ export function ProductForm({ open, onClose }: ProductFormProps) {
             ))}
           </Select>
         </div>
+        <div>
+          <p className="mb-2 text-sm font-medium">
+            {form.category === "waterproofing"
+              ? "Waterproof type / HSN"
+              : form.category === "doors"
+                ? "Door type / HSN"
+                : "HSN / GST type"}
+          </p>
+          <div className="grid gap-2">
+            {presets.map((preset) => {
+              const active = hsnKind === preset.id;
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => applyPreset(preset)}
+                  className={cn(
+                    "rounded-2xl border px-3 py-3 text-left",
+                    active
+                      ? "border-primary bg-primary/8"
+                      : "border-border bg-card text-muted-foreground",
+                  )}
+                >
+                  <span className="block text-sm font-semibold text-foreground">{preset.label}</span>
+                  <span className="mt-0.5 block text-xs leading-5">{preset.detail}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label htmlFor="prd-price">Price</Label>
+            <Label htmlFor="prd-hsn">HSN code</Label>
+            <Input
+              id="prd-hsn"
+              value={hsnKind === "flush" ? "4418 20 / 4418 29 10" : formatHsn(form.hsnCode)}
+              readOnly
+            />
+          </div>
+          <div>
+            <Label htmlFor="prd-gst">GST rate</Label>
+            <Input id="prd-gst" value={`${gstPercent(form.gstRate)}%`} readOnly />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor="prd-price">Price (ex-GST)</Label>
             <Input
               id="prd-price"
               inputMode="numeric"
@@ -135,7 +202,7 @@ export function ProductForm({ open, onClose }: ProductFormProps) {
         </div>
         <Button
           fullWidth
-          disabled={submitting || !form.name.trim() || !form.sku.trim() || !price}
+          disabled={submitting || !form.name.trim() || !form.sku.trim() || !price || !form.hsnCode}
           onClick={() => void submit()}
         >
           Save Product

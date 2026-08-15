@@ -1,33 +1,62 @@
 import type { BillTotals, InvoiceLineItem, InvoiceStatus } from "@/types";
 
 export interface BillInput {
-  items: Pick<InvoiceLineItem, "quantity" | "rate">[];
+  items: Array<Pick<InvoiceLineItem, "quantity" | "rate"> & Partial<Pick<InvoiceLineItem, "gstRate">>>;
   discount?: number;
   taxRate?: number;
   amountPaid?: number;
 }
 
+function rupees(value: number): number {
+  return Math.round(value);
+}
+
 export function calculateBill(input: BillInput): BillTotals {
-  const subtotal = input.items.reduce(
-    (sum, item) => sum + item.quantity * item.rate,
-    0,
-  );
+  const lines = input.items.map((item) => ({
+    amount: item.quantity * item.rate,
+    gstRate: item.gstRate,
+  }));
+  const subtotal = lines.reduce((sum, line) => sum + line.amount, 0);
   const discount = Math.min(Math.max(input.discount ?? 0, 0), subtotal);
-  const taxableAmount = Math.max(0, subtotal - discount);
-  const taxRate = input.taxRate ?? 0.18;
-  const tax = Math.round(taxableAmount * taxRate);
+  const invoiceTaxRate = input.taxRate ?? 0.18;
+  const applyGst = invoiceTaxRate > 0;
+
+  let allocated = 0;
+  let tax = 0;
+  let taxableAmount = 0;
+
+  lines.forEach((line, index) => {
+    const share =
+      subtotal <= 0
+        ? 0
+        : index === lines.length - 1
+          ? discount - allocated
+          : rupees((discount * line.amount) / subtotal);
+    allocated += share;
+    const taxable = Math.max(0, line.amount - share);
+    const rate = applyGst ? (line.gstRate ?? invoiceTaxRate) : 0;
+    taxableAmount += taxable;
+    tax += rupees(taxable * rate);
+  });
+
+  tax = rupees(tax);
+  taxableAmount = rupees(taxableAmount);
+  const cgst = rupees(tax / 2);
+  const sgst = tax - cgst;
   const grandTotal = taxableAmount + tax;
   const amountPaid = Math.max(0, input.amountPaid ?? 0);
-  const balance = Math.max(0, grandTotal - amountPaid);
+  const cappedPaid = Math.min(amountPaid, grandTotal);
 
   return {
     subtotal,
     discount,
     taxableAmount,
     tax,
+    cgst,
+    sgst,
     grandTotal,
-    amountPaid: Math.min(amountPaid, grandTotal),
-    balance,
+    amountPaid: cappedPaid,
+    balance: Math.max(0, grandTotal - cappedPaid),
   };
 }
 
