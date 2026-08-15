@@ -6,20 +6,11 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
 import { inferBillKind } from "@/lib/billing";
-import { canSharePdfFile, createInvoicePdfFile, downloadInvoicePdf, downloadPdfFile } from "@/lib/invoicePdf";
-import { openWhatsAppChat, whatsappChatUrl } from "@/lib/whatsapp";
+import { createInvoicePdfFile, downloadInvoicePdf, downloadPdfFile, sharePdfFile } from "@/lib/invoicePdf";
+import { openWhatsAppChat, toWhatsAppNumber } from "@/lib/whatsapp";
 import { Download, LoaderCircle, Pencil, Printer, Share2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-
-function isAbortError(error: unknown) {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "name" in error &&
-    (error as { name: string }).name === "AbortError"
-  );
-}
 
 export default function InvoiceDetails() {
   const { id } = useParams();
@@ -28,8 +19,10 @@ export default function InvoiceDetails() {
   const [downloading, setDownloading] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
   const invoice = invoices.find((item) => item.id === id);
   const customer = customers.find((item) => item.id === invoice?.customerId);
+  const filename = invoice ? `${invoice.number.replace(/\s+/g, "-")}.pdf` : "invoice.pdf";
   const listPath = invoice
     ? inferBillKind(invoice, products) === "waterproofing"
       ? "/waterproofing-bills"
@@ -37,6 +30,31 @@ export default function InvoiceDetails() {
         ? "/non-gst-bills"
         : "/billing"
     : "/billing";
+
+  useEffect(() => {
+    if (!invoice) {
+      setPdfFile(null);
+      return;
+    }
+    let cancelled = false;
+    setPdfFile(null);
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        const element = document.getElementById("invoice-print-root");
+        if (!element) return;
+        try {
+          const file = await createInvoicePdfFile(element, filename);
+          if (!cancelled) setPdfFile(file);
+        } catch {
+          if (!cancelled) setPdfFile(null);
+        }
+      })();
+    }, 700);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [filename, invoice, invoice?.amountPaid, invoice?.grandTotal, invoice?.id, invoice?.items, invoice?.notes]);
 
   if (!invoice) {
     return (
@@ -48,41 +66,36 @@ export default function InvoiceDetails() {
   }
 
   const share = async () => {
-    const element = document.getElementById("invoice-print-root");
-    if (!element) return;
     if (!customer?.phone) {
       toast("This customer has no WhatsApp number", "danger");
       return;
     }
-    const caption = `Invoice ${invoice.number} from ${settings.business.legalName}`;
-    const chatUrl = whatsappChatUrl(customer.phone, caption);
-    if (!chatUrl) {
-      toast("Customer phone number is not valid for WhatsApp", "danger");
-      return;
-    }
-
-    const chatWindow = openWhatsAppChat(customer.phone, caption);
-    const filename = `${invoice.number.replace(/\s+/g, "-")}.pdf`;
+    const element = document.getElementById("invoice-print-root");
     setSharing(true);
     try {
-      const file = await createInvoicePdfFile(element, filename);
-      if (canSharePdfFile(file)) {
-        try {
-          await navigator.share({
-            files: [file],
-            title: `Invoice ${invoice.number}`,
-          });
-        } catch (error) {
-          if (!isAbortError(error)) downloadPdfFile(file);
-        }
-      } else {
-        downloadPdfFile(file);
+      const file = pdfFile ?? (element ? await createInvoicePdfFile(element, filename) : null);
+      if (!file) {
+        toast("Unable to prepare PDF", "danger");
+        return;
       }
-      if (chatWindow?.closed) {
-        openWhatsAppChat(customer.phone, caption);
+      if (!pdfFile) setPdfFile(file);
+
+      const number = toWhatsAppNumber(customer.phone);
+      if (number) {
+        void navigator.clipboard?.writeText(number).catch(() => undefined);
       }
+
+      const result = await sharePdfFile(file, `Invoice ${invoice.number} for ${customer.name}`);
+      if (result === "shared" || result === "aborted") return;
+
+      downloadPdfFile(file);
+      openWhatsAppChat(
+        customer.phone,
+        `Invoice ${invoice.number} from ${settings.business.legalName}. Please check the PDF in Downloads and attach it here.`,
+      );
+      toast("PDF saved. Attach it in the WhatsApp chat.", "success");
     } catch {
-      toast("Could not prepare the PDF. WhatsApp is open for this customer.", "danger");
+      toast("Unable to share PDF", "danger");
     } finally {
       setSharing(false);
     }
@@ -93,7 +106,7 @@ export default function InvoiceDetails() {
     if (!element) return;
     setDownloading(true);
     try {
-      await downloadInvoicePdf(element, `${invoice.number.replace(/\s+/g, "-")}.pdf`);
+      await downloadInvoicePdf(element, filename);
       toast("PDF downloaded", "success");
     } catch {
       toast("Unable to download PDF", "danger");
@@ -128,7 +141,7 @@ export default function InvoiceDetails() {
           className="min-w-0 flex-1 px-2 whitespace-nowrap"
           disabled={sharing}
           icon={
-            sharing ? (
+            sharing || !pdfFile ? (
               <LoaderCircle className="h-4 w-4 shrink-0 animate-spin" />
             ) : (
               <Share2 className="h-4 w-4 shrink-0" />
@@ -136,7 +149,7 @@ export default function InvoiceDetails() {
           }
           onClick={() => void share()}
         >
-          Share
+          {pdfFile ? "Share" : "Preparing"}
         </Button>
         <Button
           variant="outline"
@@ -158,7 +171,7 @@ export default function InvoiceDetails() {
           variant="outline"
           size="sm"
           className="min-w-0 flex-1 px-2 whitespace-nowrap"
-          icon={<Printer className="h-4 w-4 shrink-0" />}
+          icon={<Printer className="h-4 w-4" />}
           onClick={() => window.print()}
         >
           Print

@@ -89,6 +89,25 @@ export function canSharePdfFile(file: File) {
   }
 }
 
+export async function sharePdfFile(file: File, title: string): Promise<"shared" | "aborted" | "unsupported"> {
+  try {
+    if (typeof navigator.share !== "function") return "unsupported";
+    if (!canSharePdfFile(file)) return "unsupported";
+    await navigator.share({ files: [file], title });
+    return "shared";
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "name" in error &&
+      (error as { name: string }).name === "AbortError"
+    ) {
+      return "aborted";
+    }
+    return "unsupported";
+  }
+}
+
 export async function downloadInvoicePdf(element: HTMLElement, filename: string) {
   const file = await createInvoicePdfFile(element, filename);
   downloadPdfFile(file);
