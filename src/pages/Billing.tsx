@@ -144,7 +144,7 @@ export default function Billing({
       </div>
       <InvoiceList
         invoices={visible}
-        allowDelete={kind === "doors" || mixed}
+        allowDelete
         showTaxKind={mixed}
         onCreate={() => setBillOpen(true)}
       />
