@@ -3,29 +3,32 @@ import { NewBillSheet } from "@/components/billing/NewBillSheet";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { Overlay } from "@/components/ui/Overlay";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
 import { inferBillKind, isAnyBill } from "@/lib/billing";
-import { formatInvoiceAmount } from "@/lib/currency";
+import { formatCurrency, formatInvoiceAmount } from "@/lib/currency";
 import { invoiceWhatsAppMessage } from "@/lib/invoiceLink";
 import { createInvoicePdfFile, downloadInvoicePdf, downloadPdfFile } from "@/lib/invoicePdf";
 import { mapConvexBill } from "@/services/invoiceService";
 import { openWhatsAppChat } from "@/lib/whatsapp";
 import { api } from "../../convex/_generated/api";
 import { useQuery } from "convex/react";
-import { Download, LoaderCircle, Pencil, Printer, Share2 } from "lucide-react";
+import { CircleCheck, Download, LoaderCircle, Pencil, Printer, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 export default function InvoiceDetails() {
   const { id } = useParams();
-  const { invoices, customers, products, settings } = useData();
+  const { invoices, customers, products, settings, recordPayment } = useData();
   const { toast } = useToast();
   const remoteBill = useQuery(api.billActions.get, id ? { id } : "skip");
   const [downloading, setDownloading] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [paidOpen, setPaidOpen] = useState(false);
+  const [markingPaid, setMarkingPaid] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const invoice =
     invoices.find((item) => item.id === id) ??
@@ -124,6 +127,28 @@ export default function InvoiceDetails() {
     }
   };
 
+  const markPaid = async () => {
+    if (invoice.status === "paid" || invoice.balance <= 0) return;
+    setMarkingPaid(true);
+    try {
+      await recordPayment({
+        customerId: invoice.customerId,
+        invoiceId: invoice.id,
+        amount: invoice.balance,
+        paymentMethod: invoice.paymentMethod === "credit" ? "upi" : invoice.paymentMethod,
+        notes: "Marked as paid",
+      });
+      setPaidOpen(false);
+      toast(`${invoice.number} marked as paid`, "success");
+    } catch (error) {
+      toast(error instanceof Error ? error.message : "Unable to mark as paid", "danger");
+    } finally {
+      setMarkingPaid(false);
+    }
+  };
+
+  const unpaid = invoice.status !== "cancelled" && invoice.status !== "paid" && invoice.balance > 0;
+
   return (
     <div>
       <PageHeader
@@ -132,14 +157,26 @@ export default function InvoiceDetails() {
         className="print:hidden"
         actions={
           invoice.status !== "cancelled" ? (
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-foreground"
-              aria-label="Edit bill"
-              onClick={() => setEditOpen(true)}
-            >
-              <Pencil className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              {unpaid ? (
+                <button
+                  type="button"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-foreground"
+                  aria-label="Mark bill as paid"
+                  onClick={() => setPaidOpen(true)}
+                >
+                  <CircleCheck className="h-4 w-4" />
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-foreground"
+                aria-label="Edit bill"
+                onClick={() => setEditOpen(true)}
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+            </div>
           ) : null
         }
       />
@@ -198,6 +235,34 @@ export default function InvoiceDetails() {
           onClose={() => setEditOpen(false)}
         />
       ) : null}
+      <Overlay
+        open={paidOpen}
+        onClose={() => {
+          if (!markingPaid) setPaidOpen(false);
+        }}
+        title="Mark as paid"
+      >
+        <div className="space-y-5">
+          <p className="text-sm leading-6 text-muted-foreground">
+            Mark {invoice.number} as fully paid? The outstanding{" "}
+            <span className="font-semibold text-foreground">{formatCurrency(invoice.balance)}</span>{" "}
+            will be recorded as received.
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              fullWidth
+              disabled={markingPaid}
+              onClick={() => setPaidOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button fullWidth disabled={markingPaid} onClick={() => void markPaid()}>
+              {markingPaid ? "Saving…" : "Mark as paid"}
+            </Button>
+          </div>
+        </div>
+      </Overlay>
     </div>
   );
 }
