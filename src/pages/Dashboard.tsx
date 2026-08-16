@@ -3,32 +3,21 @@ import { FeaturedCard } from "@/components/dashboard/FeaturedCard";
 import { HeroWaves } from "@/components/dashboard/HeroWaves";
 import { NewBillFlow } from "@/components/billing/NewBillFlow";
 import { brandConfig } from "@/brand/config";
-import { Overlay } from "@/components/ui/Overlay";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { useData } from "@/context/DataContext";
 import { formatCurrency } from "@/lib/currency";
 import { greeting } from "@/lib/dates";
 import { activeInvoices } from "@/lib/stats";
-import { Bell, FilePlus2, ReceiptText } from "lucide-react";
+import { FilePlus2, ReceiptText } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
-  const { loading, error, refresh, invoices, products } = useData();
+  const { loading, error, refresh, invoices } = useData();
   const navigate = useNavigate();
   const [billOpen, setBillOpen] = useState(false);
-  const [notesOpen, setNotesOpen] = useState(false);
 
-  const alerts = useMemo(() => {
-    const pending = invoices.filter(
-      (invoice) => invoice.status === "pending" || invoice.status === "partial",
-    );
-    const lowStock = products.filter((product) => product.stock <= 5);
-    return { pending, lowStock };
-  }, [invoices, products]);
-
-  const hasAlerts = alerts.pending.length + alerts.lowStock.length > 0;
   const totalSales = useMemo(
     () => activeInvoices(invoices).reduce((sum, invoice) => sum + invoice.grandTotal, 0),
     [invoices],
@@ -39,43 +28,25 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto w-full max-w-[430px] lg:max-w-none">
-      <section className="hero-gradient relative overflow-hidden px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-20 text-white">
+      <section className="hero-gradient relative overflow-hidden px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-16 text-white">
         <HeroWaves />
-        <header className="relative z-10 flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <img
-              src={brandConfig.logo}
-              alt=""
-              className="h-11 w-11 shrink-0 rounded-full bg-white object-contain shadow-[0_8px_20px_rgb(0_0_0/0.18)]"
-            />
-            <div className="min-w-0 leading-none">
-              <p className="text-[13px] font-medium text-white/75">{greeting()}!</p>
-              <h1 className="mt-1 truncate text-[17px] font-semibold tracking-[-0.03em]">
-                {brandConfig.businessName}
-              </h1>
-            </div>
+        <header className="relative z-10 flex items-center gap-3">
+          <img
+            src={brandConfig.logo}
+            alt=""
+            className="h-11 w-11 shrink-0 rounded-full bg-white object-contain shadow-[0_8px_20px_rgb(0_0_0/0.18)]"
+          />
+          <div className="min-w-0 leading-none">
+            <p className="text-[13px] font-medium text-white/75">{greeting()}!</p>
+            <h1 className="mt-1 truncate text-[17px] font-semibold tracking-[-0.03em]">
+              {brandConfig.businessName}
+            </h1>
           </div>
-          <button
-            type="button"
-            className="glass-circle relative flex h-11 w-11 items-center justify-center rounded-full"
-            aria-label="Notifications"
-            onClick={() => setNotesOpen(true)}
-          >
-            <Bell className="h-4 w-4" />
-            {hasAlerts ? (
-              <span className="absolute top-2.5 right-2.5 h-1.5 w-1.5 rounded-full bg-highlight" />
-            ) : null}
-          </button>
         </header>
 
         <div className="relative z-10 mt-6">
           <p className="text-[13px] leading-none text-white/70">Total Sales</p>
-          <div className="mt-2 flex items-end justify-between gap-3">
-            <p className="display-number text-white">{formatCurrency(totalSales)}</p>
-            <span className="mb-0.5 rounded-full bg-white/12 px-3 py-1 text-[11px] font-semibold tracking-[0.08em] text-white/90 backdrop-blur-md">
-              INR
-            </span>
-          </div>
+          <p className="display-number mt-2 text-white">{formatCurrency(totalSales)}</p>
         </div>
 
         <div className="relative z-20 mt-6 flex items-center gap-2.5">
@@ -108,38 +79,6 @@ export default function Dashboard() {
         onClose={() => setBillOpen(false)}
         onCreated={(invoiceId) => navigate(`/billing/${invoiceId}`)}
       />
-
-      <Overlay open={notesOpen} onClose={() => setNotesOpen(false)} title="Notifications">
-        <div className="space-y-3">
-          {alerts.pending.slice(0, 4).map((invoice) => (
-            <Link
-              key={invoice.id}
-              to={`/billing/${invoice.id}`}
-              className="block rounded-[20px] bg-muted px-3 py-3"
-              onClick={() => setNotesOpen(false)}
-            >
-              <p className="text-sm font-semibold">
-                {invoice.number} is {invoice.status}
-              </p>
-              <p className="text-sm text-muted-foreground">{invoice.customerName}</p>
-            </Link>
-          ))}
-          {alerts.lowStock.slice(0, 4).map((product) => (
-            <Link
-              key={product.id}
-              to="/products"
-              className="block rounded-[20px] bg-muted px-3 py-3"
-              onClick={() => setNotesOpen(false)}
-            >
-              <p className="text-sm font-semibold">{product.name} is low on stock</p>
-              <p className="text-sm text-muted-foreground">{product.stock} remaining</p>
-            </Link>
-          ))}
-          {!hasAlerts ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">You are all caught up.</p>
-          ) : null}
-        </div>
-      </Overlay>
     </div>
   );
 }

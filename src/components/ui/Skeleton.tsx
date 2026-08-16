@@ -25,17 +25,14 @@ export function ListSkeleton({ rows = 5 }: { rows?: number }) {
 export function DashboardSkeleton() {
   return (
     <div className="mx-auto w-full max-w-[430px]">
-      <div className="hero-gradient relative overflow-hidden px-5 pt-6 pb-20">
+      <div className="hero-gradient relative overflow-hidden px-5 pt-6 pb-16">
         <HeroWaves />
-        <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-11 w-11 rounded-full bg-white/20" />
-            <div className="space-y-2">
-              <Skeleton className="h-3 w-24 bg-white/20" />
-              <Skeleton className="h-5 w-32 bg-white/20" />
-            </div>
-          </div>
+        <div className="relative z-10 flex items-center gap-3">
           <Skeleton className="h-11 w-11 rounded-full bg-white/20" />
+          <div className="space-y-2">
+            <Skeleton className="h-3 w-24 bg-white/20" />
+            <Skeleton className="h-5 w-32 bg-white/20" />
+          </div>
         </div>
         <Skeleton className="relative z-10 mt-8 h-4 w-24 bg-white/20" />
         <Skeleton className="relative z-10 mt-2 h-10 w-48 bg-white/20" />
