@@ -18,7 +18,7 @@ export interface ConvexProductRow {
 
 export function mapConvexProduct(row: ConvexProductRow): Product {
   return {
-    id: row.legacyId ?? row._id,
+    id: row._id,
     name: row.name,
     sku: row.sku,
     category: row.category,

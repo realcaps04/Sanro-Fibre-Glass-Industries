@@ -69,6 +69,7 @@ export const productService = {
       sku: payload.sku,
       category: payload.category,
       price: payload.price,
+      stock: payload.stock,
       unit: payload.unit,
       description: payload.description,
       hsnCode: payload.hsnCode,
