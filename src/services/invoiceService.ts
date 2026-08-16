@@ -32,6 +32,9 @@ export interface ConvexBillRow {
   notes?: string;
   billKind?: Invoice["billKind"];
   createdAt: string;
+  shareToken?: string;
+  deliveryStatus?: Invoice["deliveryStatus"];
+  deliveredAt?: string;
 }
 
 export function mapConvexBill(row: ConvexBillRow): Invoice {
@@ -57,6 +60,9 @@ export function mapConvexBill(row: ConvexBillRow): Invoice {
     notes: row.notes,
     billKind: row.billKind,
     createdAt: row.createdAt,
+    shareToken: row.shareToken,
+    deliveryStatus: row.deliveryStatus,
+    deliveredAt: row.deliveredAt,
   };
 }
 
@@ -162,5 +168,9 @@ export const invoiceService = {
 
   async deleteInvoice(invoiceId: string): Promise<void> {
     await convex.mutation(api.billActions.remove, { id: invoiceId });
+  },
+
+  async markBillSent(invoiceId: string): Promise<void> {
+    await convex.mutation(api.billDelivery.markSent, { id: invoiceId });
   },
 };

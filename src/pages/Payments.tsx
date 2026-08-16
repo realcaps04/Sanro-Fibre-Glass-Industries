@@ -1,6 +1,4 @@
 import { PageHeader } from "@/components/layout/PageHeader";
-import { PaymentSheet } from "@/components/payments/PaymentSheet";
-import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -14,7 +12,6 @@ import { paymentLabel } from "@/lib/labels";
 import { matchesQuery } from "@/lib/search";
 import { activeInvoices } from "@/lib/stats";
 import type { Invoice } from "@/types";
-import { Plus } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 
@@ -47,7 +44,6 @@ export default function Payments() {
   const { invoices, products, loading, error, refresh } = useData();
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState<KindFilter>("all");
-  const [recordOpen, setRecordOpen] = useState(false);
 
   const payments = useMemo(
     () =>
@@ -99,11 +95,6 @@ export default function Payments() {
       <PageHeader
         title="Payments"
         description="Customer payments for every product type."
-        actions={
-          <Button icon={<Plus className="h-4 w-4" />} onClick={() => setRecordOpen(true)}>
-            Record
-          </Button>
-        }
       />
       <SearchInput
         value={query}
@@ -169,11 +160,8 @@ export default function Payments() {
         <EmptyState
           title="No payments yet"
           description="Payments from customers will show here for every product type."
-          actionLabel="Record Payment"
-          onAction={() => setRecordOpen(true)}
         />
       )}
-      <PaymentSheet open={recordOpen} onClose={() => setRecordOpen(false)} />
     </div>
   );
 }

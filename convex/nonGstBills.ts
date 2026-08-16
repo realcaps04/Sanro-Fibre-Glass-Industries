@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { insertBill, patchBill } from "./bills";
+import { queueBillDelivery } from "./billDelivery";
 import { billWriteArgs } from "./validators";
 
 export const list = query({
@@ -13,7 +14,11 @@ export const list = query({
 
 export const create = mutation({
   args: billWriteArgs,
-  handler: async (ctx, args) => insertBill(ctx, "Non_Gst_Bills", { ...args, taxRate: 0 }),
+  handler: async (ctx, args) => {
+    const row = await insertBill(ctx, "Non_Gst_Bills", { ...args, taxRate: 0 });
+    if (row) await queueBillDelivery(ctx, row._id);
+    return row;
+  },
 });
 
 export const update = mutation({

@@ -58,6 +58,16 @@ export const billFields = {
   notes: v.optional(v.string()),
   billKind: v.optional(billKind),
   createdAt: v.string(),
+  shareToken: v.optional(v.string()),
+  deliveryStatus: v.optional(
+    v.union(
+      v.literal("pending"),
+      v.literal("sent"),
+      v.literal("skipped"),
+      v.literal("expired"),
+    ),
+  ),
+  deliveredAt: v.optional(v.string()),
 };
 
 export const billWriteArgs = {

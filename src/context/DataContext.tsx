@@ -55,7 +55,9 @@ interface DataContextValue {
   updateInvoice: (id: string, input: CreateInvoiceInput) => Promise<Invoice>;
   recordPayment: (input: RecordPaymentInput) => Promise<void>;
   addCustomer: (input: Omit<Customer, "id" | "createdAt">) => Promise<Customer>;
+  deleteCustomer: (customerId: string) => Promise<void>;
   addProduct: (input: Omit<Product, "id">) => Promise<Product>;
+  updateProduct: (id: string, input: Omit<Product, "id">) => Promise<Product>;
   addExpense: (input: CreateExpenseInput) => Promise<Expense>;
   updateSettings: (patch: Partial<AppSettings>) => Promise<void>;
   cancelInvoice: (invoiceId: string) => Promise<void>;
@@ -253,8 +255,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return customerService.createCustomer(input);
   }, []);
 
+  const deleteCustomer = useCallback(async (customerId: string) => {
+    await customerService.deleteCustomer(customerId);
+  }, []);
+
   const addProduct = useCallback(async (input: Omit<Product, "id">) => {
     return productService.createProduct(input);
+  }, []);
+
+  const updateProduct = useCallback(async (id: string, input: Omit<Product, "id">) => {
+    return productService.updateProduct(id, input);
   }, []);
 
   const addExpense = useCallback(
@@ -335,7 +345,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       updateInvoice,
       recordPayment,
       addCustomer,
+      deleteCustomer,
       addProduct,
+      updateProduct,
       addExpense,
       updateSettings,
       cancelInvoice,
@@ -347,7 +359,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       addCustomer,
       addExpense,
       addProduct,
+      updateProduct,
       cancelInvoice,
+      deleteCustomer,
       deleteInvoice,
       createInvoice,
       updateInvoice,

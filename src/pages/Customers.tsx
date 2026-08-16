@@ -1,23 +1,28 @@
 import { CustomerForm } from "@/components/customers/CustomerForm";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
+import { DeleteConfirmOverlay } from "@/components/ui/DeleteConfirmOverlay";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { useData } from "@/context/DataContext";
+import { useToast } from "@/context/ToastContext";
 import { formatCurrency } from "@/lib/currency";
 import { telUrl } from "@/lib/phone";
 import { matchesQuery } from "@/lib/search";
 import { customerOutstanding, customerPurchases } from "@/lib/stats";
-import { FileText, Phone, Plus, Users } from "lucide-react";
+import type { Customer } from "@/types";
+import { FileText, Phone, Plus, Trash2, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Customers() {
-  const { customers, invoices, loading, error, refresh } = useData();
+  const { customers, invoices, loading, error, refresh, deleteCustomer } = useData();
+  const { toast } = useToast();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [pending, setPending] = useState<Customer | null>(null);
 
   const visible = useMemo(
     () =>
@@ -68,8 +73,20 @@ export default function Customers() {
 
             return (
               <article key={customer.id} className="elevated rounded-[24px] px-4 py-4">
-                <h2 className="text-[17px] font-semibold tracking-[-0.03em]">{customer.name}</h2>
-                <p className="mt-0.5 text-sm text-muted-foreground">{customer.phone}</p>
+                <div className="flex items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-[17px] font-semibold tracking-[-0.03em]">{customer.name}</h2>
+                    <p className="mt-0.5 text-sm text-muted-foreground">{customer.phone}</p>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label={`Delete ${customer.name}`}
+                    onClick={() => setPending(customer)}
+                    className="shrink-0 rounded-md p-2 text-muted-foreground hover:bg-danger/10 hover:text-danger"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <div className="rounded-2xl bg-muted px-3 py-3">
@@ -125,6 +142,17 @@ export default function Customers() {
         />
       )}
       <CustomerForm open={open} onClose={() => setOpen(false)} />
+      <DeleteConfirmOverlay
+        open={Boolean(pending)}
+        title="Delete customer"
+        description={`Enter the password to delete ${pending?.name ?? "this customer"}. This cannot be undone.`}
+        onClose={() => setPending(null)}
+        onConfirm={async () => {
+          if (!pending) return;
+          await deleteCustomer(pending.id);
+          toast(`${pending.name} deleted`, "success");
+        }}
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { Overlay } from "@/components/ui/Overlay";
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
 import { composeCustomerAddress } from "@/lib/address";
+import { normalizeGstin, normalizePhone } from "@/lib/phone";
 import type { Customer } from "@/types";
 import { useState } from "react";
 
@@ -15,7 +16,7 @@ interface CustomerFormProps {
 }
 
 export function CustomerForm({ open, onClose, onCreated }: CustomerFormProps) {
-  const { addCustomer } = useData();
+  const { addCustomer, customers } = useData();
   const { toast } = useToast();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -36,6 +37,23 @@ export function CustomerForm({ open, onClose, onCreated }: CustomerFormProps) {
 
   const submit = async () => {
     if (!name.trim() || !phone.trim()) return;
+    const phoneKey = normalizePhone(phone);
+    if (phoneKey.length < 10) {
+      toast("Enter a valid 10-digit phone number", "danger");
+      return;
+    }
+    const gstinKey = normalizeGstin(gstin);
+    if (customers.some((customer) => normalizePhone(customer.phone) === phoneKey)) {
+      toast("A customer with this phone number already exists", "danger");
+      return;
+    }
+    if (
+      gstinKey &&
+      customers.some((customer) => normalizeGstin(customer.gstin) === gstinKey)
+    ) {
+      toast("A customer with this GSTIN already exists", "danger");
+      return;
+    }
     setSubmitting(true);
     try {
       const trimmedHouse = houseName.trim();
@@ -43,7 +61,7 @@ export function CustomerForm({ open, onClose, onCreated }: CustomerFormProps) {
       const trimmedPin = pincode.trim();
       const customer = await addCustomer({
         name: name.trim(),
-        phone: phone.trim(),
+        phone: phoneKey,
         houseName: trimmedHouse || undefined,
         place: trimmedPlace || undefined,
         pincode: trimmedPin || undefined,
@@ -52,14 +70,14 @@ export function CustomerForm({ open, onClose, onCreated }: CustomerFormProps) {
           place: trimmedPlace,
           pincode: trimmedPin,
         }),
-        gstin: gstin.trim() || undefined,
+        gstin: gstinKey,
       });
       toast("Customer added", "success");
       reset();
       onCreated?.(customer);
       onClose();
-    } catch {
-      toast("Unable to add customer", "danger");
+    } catch (error) {
+      toast(error instanceof Error ? error.message : "Unable to add customer", "danger");
     } finally {
       setSubmitting(false);
     }

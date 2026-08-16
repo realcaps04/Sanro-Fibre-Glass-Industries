@@ -77,6 +77,9 @@ export interface Invoice {
   notes?: string;
   billKind?: BillKind;
   createdAt: string;
+  shareToken?: string;
+  deliveryStatus?: "pending" | "sent" | "skipped" | "expired";
+  deliveredAt?: string;
 }
 
 export interface CreateInvoiceInput {

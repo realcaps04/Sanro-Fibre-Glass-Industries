@@ -81,7 +81,11 @@ export async function insertBill(ctx: MutationCtx, table: BillTable, input: Bill
     table === "Estimate" ? ["Estimate"] : ["Door_Bills", "Non_Gst_Bills"],
     prefix,
   );
-  const id = await ctx.db.insert(table, buildBillDoc(input, number, createdAt));
+  const id = await ctx.db.insert(table, {
+    ...buildBillDoc(input, number, createdAt),
+    shareToken: crypto.randomUUID().replace(/-/g, ""),
+    deliveryStatus: table === "Estimate" ? undefined : "pending",
+  });
   return await ctx.db.get(id);
 }
 

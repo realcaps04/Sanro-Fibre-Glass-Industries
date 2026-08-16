@@ -93,4 +93,8 @@ export const customerService = {
     if (!row) throw new Error("Customer not found");
     return mapConvexCustomer(row);
   },
+
+  async deleteCustomer(id: string): Promise<void> {
+    await convex.mutation(api.customers.remove, { id });
+  },
 };

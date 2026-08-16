@@ -11,18 +11,17 @@ import { formatHsn, gstPercent } from "@/lib/hsn";
 import { productCategoryLabel } from "@/lib/labels";
 import { matchesQuery } from "@/lib/search";
 import { cn } from "@/lib/cn";
-import type { ProductCategory } from "@/types";
-import { Package, Plus } from "lucide-react";
+import type { Product, ProductCategory } from "@/types";
+import { Package, Pencil, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-const filters: Array<{ value: ProductCategory | "all" | "low"; label: string }> = [
+const filters: Array<{ value: ProductCategory | "all"; label: string }> = [
   { value: "all", label: "All" },
   { value: "doors", label: "Doors" },
   { value: "windows", label: "Windows" },
   { value: "accessories", label: "Accessories" },
   { value: "waterproofing", label: "Water proofing" },
-  { value: "low", label: "Low Stock" },
 ];
 
 export default function Products() {
@@ -36,6 +35,7 @@ export default function Products() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<(typeof filters)[number]["value"]>(initialFilter);
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Product | null>(null);
 
   useEffect(() => {
     setFilter(initialFilter);
@@ -44,9 +44,7 @@ export default function Products() {
   const visible = useMemo(
     () =>
       products.filter((product) => {
-        const matchesFilter =
-          filter === "all" ||
-          (filter === "low" ? product.stock <= 5 : product.category === filter);
+        const matchesFilter = filter === "all" || product.category === filter;
         return (
           matchesFilter &&
           matchesQuery(query, product.name, product.sku, product.description, product.hsnCode)
@@ -54,6 +52,11 @@ export default function Products() {
       }),
     [filter, products, query],
   );
+
+  const closeForm = () => {
+    setOpen(false);
+    setEditing(null);
+  };
 
   if (loading) return <PageSkeleton />;
   if (error) return <ErrorState title="Unable to load products" onRetry={() => void refresh()} />;
@@ -63,7 +66,13 @@ export default function Products() {
       <PageHeader
         title="Products"
         actions={
-          <Button icon={<Plus className="h-4 w-4" />} onClick={() => setOpen(true)}>
+          <Button
+            icon={<Plus className="h-4 w-4" />}
+            onClick={() => {
+              setEditing(null);
+              setOpen(true);
+            }}
+          >
             Add Product
           </Button>
         }
@@ -75,14 +84,14 @@ export default function Products() {
         aria-label="Search products"
         className="mb-4"
       />
-      <div className="mb-4 flex gap-2 overflow-x-auto">
+      <div className="mb-4 flex flex-wrap gap-2">
         {filters.map((item) => (
           <button
             key={item.value}
             type="button"
             onClick={() => setFilter(item.value)}
             className={cn(
-              "shrink-0 rounded-md border px-3 py-1.5 text-sm",
+              "rounded-md border px-3 py-1.5 text-sm",
               filter === item.value
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border bg-card text-muted-foreground",
@@ -95,8 +104,8 @@ export default function Products() {
       {visible.length ? (
         <div className="elevated divide-y divide-border rounded-lg">
           {visible.map((product) => (
-            <div key={product.id} className="flex items-start justify-between gap-3 px-4 py-3">
-              <div>
+            <div key={product.id} className="flex items-start gap-3 px-4 py-3">
+              <div className="min-w-0 flex-1">
                 <p className="font-medium">{product.name}</p>
                 <p className="text-sm text-muted-foreground">
                   SKU: {product.sku} · {productCategoryLabel[product.category]}
@@ -108,14 +117,17 @@ export default function Products() {
                   {formatCurrency(product.price)}
                 </p>
               </div>
-              <p
-                className={cn(
-                  "text-sm",
-                  product.stock <= 5 ? "text-warning" : "text-muted-foreground",
-                )}
+              <button
+                type="button"
+                aria-label={`Edit ${product.name}`}
+                onClick={() => {
+                  setEditing(product);
+                  setOpen(true);
+                }}
+                className="shrink-0 rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
               >
-                Stock: {product.stock}
-              </p>
+                <Pencil className="h-4 w-4" />
+              </button>
             </div>
           ))}
         </div>
@@ -125,10 +137,13 @@ export default function Products() {
           title="No products yet"
           description="Add doors, windows and accessories to start creating bills."
           actionLabel="Add Product"
-          onAction={() => setOpen(true)}
+          onAction={() => {
+            setEditing(null);
+            setOpen(true);
+          }}
         />
       )}
-      <ProductForm open={open} onClose={() => setOpen(false)} />
+      <ProductForm open={open} existing={editing ?? undefined} onClose={closeForm} />
     </div>
   );
 }

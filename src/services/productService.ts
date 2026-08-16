@@ -58,6 +58,25 @@ export const productService = {
     return mapConvexProduct(row);
   },
 
+  async updateProduct(id: string, input: Omit<Product, "id">): Promise<Product> {
+    const payload = normalizeInput(input);
+    const row = await convex.mutation(api.products.update, {
+      id,
+      name: payload.name,
+      sku: payload.sku,
+      category: payload.category,
+      price: payload.price,
+      unit: payload.unit,
+      description: payload.description,
+      hsnCode: payload.hsnCode,
+      gstRate: payload.gstRate,
+    });
+    if (!row) {
+      throw new Error("Unable to update product");
+    }
+    return mapConvexProduct(row);
+  },
+
   async adjustStock(id: string, delta: number): Promise<void> {
     await convex.mutation(api.products.adjustStock, { id, delta });
   },
