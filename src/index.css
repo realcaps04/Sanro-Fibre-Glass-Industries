@@ -167,6 +167,31 @@ h3 {
     linear-gradient(165deg, var(--hero-from) 0%, var(--hero-via) 48%, var(--hero-to) 100%);
 }
 
+@keyframes hero-wave-shift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.hero-wave-shift {
+  animation: hero-wave-shift 14s linear infinite;
+}
+
+.hero-wave-shift-delay {
+  animation-duration: 18s;
+  animation-direction: reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-wave-shift,
+  .hero-wave-shift-delay {
+    animation: none;
+  }
+}
+
 .glass-circle {
   background: rgb(255 255 255 / 0.12);
   backdrop-filter: blur(18px);

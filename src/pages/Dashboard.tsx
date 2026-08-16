@@ -28,7 +28,7 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto w-full max-w-[430px] lg:max-w-none">
-      <section className="hero-gradient relative overflow-hidden px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-16 text-white">
+      <section className="hero-gradient relative overflow-hidden px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[4.75rem] text-white">
         <HeroWaves />
         <header className="relative z-10 flex items-center gap-3">
           <img
@@ -69,7 +69,7 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <section className="relative z-10 -mt-10 space-y-6 bg-background px-5 pt-2 pb-4">
+      <section className="relative z-10 -mt-8 space-y-6 bg-background px-5 pt-2 pb-4">
         <CategoryGrid />
         <FeaturedCard />
       </section>
