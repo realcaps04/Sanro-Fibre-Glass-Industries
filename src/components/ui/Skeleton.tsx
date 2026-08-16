@@ -1,3 +1,4 @@
+import { HeroWaves } from "@/components/dashboard/HeroWaves";
 import { cn } from "@/lib/cn";
 
 export function Skeleton({ className }: { className?: string }) {
@@ -24,8 +25,9 @@ export function ListSkeleton({ rows = 5 }: { rows?: number }) {
 export function DashboardSkeleton() {
   return (
     <div className="mx-auto w-full max-w-[430px]">
-      <div className="hero-gradient px-5 pt-6 pb-12">
-        <div className="flex items-center justify-between">
+      <div className="hero-gradient relative overflow-hidden px-5 pt-6 pb-20">
+        <HeroWaves />
+        <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Skeleton className="h-11 w-11 rounded-full bg-white/20" />
             <div className="space-y-2">
@@ -35,14 +37,14 @@ export function DashboardSkeleton() {
           </div>
           <Skeleton className="h-11 w-11 rounded-full bg-white/20" />
         </div>
-        <Skeleton className="mt-8 h-4 w-24 bg-white/20" />
-        <Skeleton className="mt-2 h-10 w-48 bg-white/20" />
-        <div className="mt-6 flex gap-2">
+        <Skeleton className="relative z-10 mt-8 h-4 w-24 bg-white/20" />
+        <Skeleton className="relative z-10 mt-2 h-10 w-48 bg-white/20" />
+        <div className="relative z-10 mt-6 flex gap-2">
           <Skeleton className="h-12 flex-1 rounded-full bg-white/20" />
           <Skeleton className="h-12 flex-1 rounded-full bg-white/20" />
         </div>
       </div>
-      <div className="-mt-8 space-y-6 rounded-t-[36px] bg-background px-5 pt-7">
+      <div className="relative z-10 -mt-10 space-y-6 bg-background px-5 pt-2">
         <div className="grid grid-cols-4 gap-3">
           {Array.from({ length: 8 }).map((_, index) => (
             <Skeleton key={index} className="h-20 rounded-[18px]" />

@@ -162,9 +162,44 @@ h3 {
 
 .hero-gradient {
   background:
-    radial-gradient(120% 90% at 8% -20%, rgb(255 255 255 / 0.18), transparent 46%),
-    radial-gradient(90% 70% at 100% 0%, rgb(11 92 77 / 0.7), transparent 52%),
-    linear-gradient(165deg, var(--hero-from) 0%, var(--hero-via) 48%, var(--hero-to) 100%);
+    radial-gradient(120% 90% at 8% -20%, rgb(255 255 255 / 0.2), transparent 46%),
+    radial-gradient(90% 70% at 100% 0%, rgb(11 92 77 / 0.72), transparent 52%),
+    linear-gradient(165deg, var(--hero-from) 0%, var(--hero-via) 46%, var(--hero-to) 100%);
+}
+
+@keyframes hero-wave-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-2.5%, 1.2%, 0);
+  }
+}
+
+@keyframes hero-wave-drift-slow {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(2%, -1%, 0);
+  }
+}
+
+.hero-wave-drift {
+  animation: hero-wave-drift 16s ease-in-out infinite;
+}
+
+.hero-wave-drift-slow {
+  animation: hero-wave-drift-slow 22s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-wave-drift,
+  .hero-wave-drift-slow {
+    animation: none;
+  }
 }
 
 .glass-circle {
