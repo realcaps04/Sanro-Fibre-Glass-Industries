@@ -16,6 +16,9 @@ export const create = mutation({
       ...args,
       taxRate,
       billKind: "mixed",
+      items: gst
+        ? args.items
+        : args.items.map((item) => ({ ...item, gstRate: 0, tax: 0 })),
     });
     if (row) await queueBillDelivery(ctx, row._id);
     return row;

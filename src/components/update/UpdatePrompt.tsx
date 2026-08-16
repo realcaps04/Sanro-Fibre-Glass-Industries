@@ -8,8 +8,9 @@ export function UpdatePrompt() {
   return (
     <Modal open={available} onClose={updating ? () => undefined : later} title="Update available">
       <div className="space-y-5">
-        <p className="text-sm leading-6 font-medium text-foreground">
-          A new version of Sanro Doors is available. Update now for the latest features and fixes.
+        <p className="text-center text-sm leading-6 font-medium text-foreground">
+          A newer version of Sanro Doors is ready. Update now to keep billing and records in
+          sync with the latest release.
         </p>
         <div className="flex flex-col gap-2 sm:flex-row-reverse">
           <Button fullWidth onClick={update} disabled={updating}>

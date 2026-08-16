@@ -51,10 +51,14 @@ export async function nextBillNumber(
 
 export function buildBillDoc(input: BillWrite, number: string, createdAt: string) {
   const date = input.date ?? createdAt;
+  const nonGst = input.taxRate <= 0;
+  const items = nonGst
+    ? input.items.map((item) => ({ ...item, gstRate: 0, tax: 0 }))
+    : input.items;
   const totals = billTotals({
-    items: input.items,
+    items,
     discount: input.discount,
-    taxRate: input.taxRate,
+    taxRate: nonGst ? 0 : input.taxRate,
     amountPaid: input.amountPaid,
   });
   return {
@@ -62,14 +66,14 @@ export function buildBillDoc(input: BillWrite, number: string, createdAt: string
     customerId: input.customerId,
     customerName: input.customerName.trim(),
     date,
-    items: input.items,
+    items,
     ...totals,
-    taxRate: input.taxRate,
+    taxRate: nonGst ? 0 : input.taxRate,
     paymentMethod: input.paymentMethod,
     status: statusFromBalances(totals.amountPaid, totals.grandTotal),
     notes: input.notes?.trim() || undefined,
     billKind: input.billKind,
-    gstBill: input.taxRate > 0,
+    gstBill: !nonGst,
     createdAt,
   };
 }

@@ -136,7 +136,7 @@ export function NewBillSheet({
           rate: product.price,
           amount: lineAmount(quantity, product.price),
           hsnCode: product.hsnCode,
-          gstRate: product.gstRate,
+          gstRate: nonGst ? 0 : product.gstRate,
         },
       ];
     });
@@ -159,9 +159,11 @@ export function NewBillSheet({
       const payload = {
         customerId: customer.id,
         customerName: customer.name,
-        items,
+        items: nonGst
+          ? items.map((item) => ({ ...item, gstRate: 0, tax: 0 }))
+          : items,
         discount,
-        taxRate,
+        taxRate: nonGst ? 0 : taxRate,
         amountPaid,
         paymentMethod,
         notes: existing?.notes ?? settings.invoice.defaultNotes,
@@ -301,6 +303,7 @@ export function NewBillSheet({
         allowedCategories={billKindCategories[kind]}
         title={productSelectorTitle(kind)}
         searchPlaceholder={billKindSearchPlaceholder[kind]}
+        hideGst={nonGst}
       />
     </>
   );

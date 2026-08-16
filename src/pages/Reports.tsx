@@ -27,7 +27,7 @@ export default function Reports() {
     .reduce((sum, invoice) => sum + invoice.grandTotal, 0);
   const profit = monthSales - monthExpenses;
   const tax = invoices
-    .filter((invoice) => invoice.status !== "cancelled")
+    .filter((invoice) => invoice.status !== "cancelled" && invoice.taxRate > 0)
     .reduce((sum, invoice) => sum + invoice.tax, 0);
   const topCustomer = [...customers]
     .map((customer) => ({
@@ -91,9 +91,9 @@ export default function Reports() {
     {
       title: "Tax Report",
       value: formatCurrency(tax),
-      detail: `${Math.round((invoices.find((invoice) => invoice.status !== "cancelled")?.taxRate ?? 0.18) * 100)}% GST collected`,
+      detail: `${Math.round((invoices.find((invoice) => invoice.status !== "cancelled" && invoice.taxRate > 0)?.taxRate ?? 0.18) * 100)}% GST collected`,
       series: invoices
-        .filter((invoice) => invoice.status !== "cancelled")
+        .filter((invoice) => invoice.status !== "cancelled" && invoice.taxRate > 0)
         .slice(0, 10)
         .reverse()
         .map((invoice) => ({ label: invoice.number.slice(-2), value: invoice.tax })),

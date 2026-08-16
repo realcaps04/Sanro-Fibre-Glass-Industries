@@ -15,7 +15,11 @@ export const list = query({
 export const create = mutation({
   args: billWriteArgs,
   handler: async (ctx, args) => {
-    const row = await insertBill(ctx, "Non_Gst_Bills", { ...args, taxRate: 0 });
+    const row = await insertBill(ctx, "Non_Gst_Bills", {
+      ...args,
+      taxRate: 0,
+      items: args.items.map((item) => ({ ...item, gstRate: 0, tax: 0 })),
+    });
     if (row) await queueBillDelivery(ctx, row._id);
     return row;
   },
@@ -24,7 +28,11 @@ export const create = mutation({
 export const update = mutation({
   args: { id: v.string(), ...billWriteArgs },
   handler: async (ctx, { id, ...args }) => {
-    const row = await patchBill(ctx, "Non_Gst_Bills", id, { ...args, taxRate: 0 });
+    const row = await patchBill(ctx, "Non_Gst_Bills", id, {
+      ...args,
+      taxRate: 0,
+      items: args.items.map((item) => ({ ...item, gstRate: 0, tax: 0 })),
+    });
     if (!row) throw new Error("Bill not found");
     return row;
   },

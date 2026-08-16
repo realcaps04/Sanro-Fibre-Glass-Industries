@@ -37,7 +37,13 @@ export const update = mutation({
       ctx,
       found.table,
       id,
-      found.table === "Non_Gst_Bills" ? { ...args, taxRate: 0 } : args,
+      found.table === "Non_Gst_Bills"
+        ? {
+            ...args,
+            taxRate: 0,
+            items: args.items.map((item) => ({ ...item, gstRate: 0, tax: 0 })),
+          }
+        : args,
     );
     if (!row) throw new Error("Bill not found");
     return row;

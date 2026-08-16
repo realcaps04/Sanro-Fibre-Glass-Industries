@@ -1,3 +1,4 @@
+import { calculateBill } from "@/lib/calculations";
 import { api } from "../../convex/_generated/api";
 import { convex } from "@/lib/convex";
 import { matchesQuery } from "@/lib/search";
@@ -31,6 +32,7 @@ export interface ConvexBillRow {
   status: InvoiceStatus;
   notes?: string;
   billKind?: Invoice["billKind"];
+  gstBill?: boolean;
   createdAt: string;
   shareToken?: string;
   deliveryStatus?: Invoice["deliveryStatus"];
@@ -38,23 +40,35 @@ export interface ConvexBillRow {
 }
 
 export function mapConvexBill(row: ConvexBillRow): Invoice {
+  const nonGst = row.taxRate === 0 || row.gstBill === false;
+  const totals = nonGst
+    ? calculateBill({
+        items: row.items,
+        discount: row.discount,
+        taxRate: 0,
+        amountPaid: row.amountPaid,
+      })
+    : undefined;
+  const items = nonGst
+    ? row.items.map((item) => ({ ...item, gstRate: 0, tax: 0 }))
+    : row.items;
   return {
     id: row._id,
     number: row.number,
     customerId: row.customerId,
     customerName: row.customerName,
     date: row.date,
-    items: row.items,
-    subtotal: row.subtotal,
+    items,
+    subtotal: totals?.subtotal ?? row.subtotal,
     discount: row.discount,
-    taxableAmount: row.taxableAmount,
-    taxRate: row.taxRate,
-    tax: row.tax,
-    cgst: row.cgst,
-    sgst: row.sgst,
-    grandTotal: row.grandTotal,
-    amountPaid: row.amountPaid,
-    balance: row.balance,
+    taxableAmount: totals?.taxableAmount ?? row.taxableAmount,
+    taxRate: nonGst ? 0 : row.taxRate,
+    tax: totals?.tax ?? row.tax,
+    cgst: totals?.cgst ?? row.cgst,
+    sgst: totals?.sgst ?? row.sgst,
+    grandTotal: totals?.grandTotal ?? row.grandTotal,
+    amountPaid: totals?.amountPaid ?? row.amountPaid,
+    balance: totals?.balance ?? row.balance,
     paymentMethod: row.paymentMethod,
     status: row.status,
     notes: row.notes,
@@ -66,7 +80,7 @@ export function mapConvexBill(row: ConvexBillRow): Invoice {
   };
 }
 
-function lineItems(items: InvoiceLineItem[]) {
+function lineItems(items: InvoiceLineItem[], nonGst = false) {
   return items.map((item) => ({
     productId: item.productId,
     name: item.name,
@@ -75,19 +89,20 @@ function lineItems(items: InvoiceLineItem[]) {
     rate: item.rate,
     amount: item.quantity * item.rate,
     hsnCode: item.hsnCode,
-    gstRate: item.gstRate,
-    taxableAmount: item.taxableAmount,
-    tax: item.tax,
+    gstRate: nonGst ? 0 : item.gstRate,
+    taxableAmount: nonGst ? item.quantity * item.rate : item.taxableAmount,
+    tax: nonGst ? 0 : item.tax,
   }));
 }
 
 function billArgs(input: CreateInvoiceInput, prefix: string) {
+  const nonGst = input.taxRate === 0;
   return {
     customerId: input.customerId,
     customerName: input.customerName,
-    items: lineItems(input.items),
+    items: lineItems(input.items, nonGst),
     discount: input.discount,
-    taxRate: input.taxRate,
+    taxRate: nonGst ? 0 : input.taxRate,
     amountPaid: input.amountPaid,
     paymentMethod: input.paymentMethod,
     notes: input.notes?.trim() || undefined,

@@ -25,6 +25,7 @@ interface ProductSelectorProps {
   allowedCategories?: ProductCategory[];
   title?: string;
   searchPlaceholder?: string;
+  hideGst?: boolean;
 }
 
 export function ProductSelector({
@@ -34,6 +35,7 @@ export function ProductSelector({
   allowedCategories,
   title = "Select product",
   searchPlaceholder = "Search products",
+  hideGst = false,
 }: ProductSelectorProps) {
   const { products } = useData();
   const [query, setQuery] = useState("");
@@ -76,7 +78,8 @@ export function ProductSelector({
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{product.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {product.sku} · HSN {formatHsn(product.hsnCode)} · GST {gstPercent(product.gstRate)}%
+                    {product.sku} · HSN {formatHsn(product.hsnCode)}
+                    {hideGst ? "" : ` · GST ${gstPercent(product.gstRate)}%`}
                   </p>
                   <p className="text-xs text-muted-foreground">Stock {product.stock}</p>
                   <p className="mt-0.5 text-sm tabular-nums">{formatCurrency(product.price)}</p>

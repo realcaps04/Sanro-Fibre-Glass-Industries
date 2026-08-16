@@ -2,6 +2,14 @@ function rupees(value: number) {
   return Math.round(value);
 }
 
+function paidAndBalance(amountPaid: number | undefined, grandTotal: number) {
+  const cappedPaid = Math.min(Math.max(0, amountPaid ?? 0), grandTotal);
+  return {
+    amountPaid: cappedPaid,
+    balance: Math.max(0, grandTotal - cappedPaid),
+  };
+}
+
 export function billTotals(input: {
   items: Array<{ quantity: number; rate: number; gstRate?: number }>;
   discount?: number;
@@ -14,8 +22,23 @@ export function billTotals(input: {
   }));
   const subtotal = lines.reduce((sum, line) => sum + line.amount, 0);
   const discount = Math.min(Math.max(input.discount ?? 0, 0), subtotal);
+  const applyGst = (input.taxRate ?? 0) > 0;
+
+  if (!applyGst) {
+    const taxableAmount = rupees(subtotal - discount);
+    return {
+      subtotal,
+      discount,
+      taxableAmount,
+      tax: 0,
+      cgst: 0,
+      sgst: 0,
+      grandTotal: taxableAmount,
+      ...paidAndBalance(input.amountPaid, taxableAmount),
+    };
+  }
+
   const invoiceTaxRate = input.taxRate ?? 0.18;
-  const applyGst = invoiceTaxRate > 0;
   let allocated = 0;
   let tax = 0;
   let taxableAmount = 0;
@@ -29,7 +52,7 @@ export function billTotals(input: {
           : rupees((discount * line.amount) / subtotal);
     allocated += share;
     const taxable = Math.max(0, line.amount - share);
-    const rate = applyGst ? (line.gstRate ?? invoiceTaxRate) : 0;
+    const rate = line.gstRate ?? invoiceTaxRate;
     taxableAmount += taxable;
     tax += rupees(taxable * rate);
   });
@@ -39,7 +62,6 @@ export function billTotals(input: {
   const cgst = rupees(tax / 2);
   const sgst = tax - cgst;
   const grandTotal = taxableAmount + tax;
-  const amountPaid = Math.min(Math.max(0, input.amountPaid ?? 0), grandTotal);
 
   return {
     subtotal,
@@ -49,8 +71,7 @@ export function billTotals(input: {
     cgst,
     sgst,
     grandTotal,
-    amountPaid,
-    balance: Math.max(0, grandTotal - amountPaid),
+    ...paidAndBalance(input.amountPaid, grandTotal),
   };
 }
 
