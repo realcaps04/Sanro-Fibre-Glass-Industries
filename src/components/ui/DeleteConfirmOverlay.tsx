@@ -65,9 +65,13 @@ export function DeleteConfirmOverlay({
           <Label htmlFor="delete-confirm-password">Password</Label>
           <Input
             id="delete-confirm-password"
-            type="password"
+            type="text"
             inputMode="numeric"
             autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            enterKeyHint="done"
             value={password}
             onChange={(event) => {
               setPassword(event.target.value);
@@ -78,7 +82,7 @@ export function DeleteConfirmOverlay({
           {error ? <p className="mt-1.5 text-sm text-danger">{error}</p> : null}
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" fullWidth onClick={close} disabled={deleting}>
+          <Button variant="outline" fullWidth type="button" onClick={close} disabled={deleting}>
             Cancel
           </Button>
           <Button variant="danger" fullWidth type="submit" disabled={deleting || !password.trim()}>

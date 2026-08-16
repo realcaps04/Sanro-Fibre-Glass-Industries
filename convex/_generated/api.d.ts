@@ -16,6 +16,7 @@ import type * as crons from "../crons.js";
 import type * as customers from "../customers.js";
 import type * as doorBills from "../doorBills.js";
 import type * as estimates from "../estimates.js";
+import type * as gstBills from "../gstBills.js";
 import type * as nonGstBills from "../nonGstBills.js";
 import type * as payments from "../payments.js";
 import type * as products from "../products.js";
@@ -38,6 +39,7 @@ declare const fullApi: ApiFromModules<{
   customers: typeof customers;
   doorBills: typeof doorBills;
   estimates: typeof estimates;
+  gstBills: typeof gstBills;
   nonGstBills: typeof nonGstBills;
   payments: typeof payments;
   products: typeof products;

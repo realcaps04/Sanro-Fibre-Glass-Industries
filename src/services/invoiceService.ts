@@ -114,11 +114,12 @@ function billArgs(input: CreateInvoiceInput, prefix: string) {
 
 export const invoiceService = {
   async getInvoices(): Promise<Invoice[]> {
-    const [doors, nonGst] = await Promise.all([
+    const [gst, doors, nonGst] = await Promise.all([
+      convex.query(api.gstBills.list),
       convex.query(api.doorBills.list),
       convex.query(api.nonGstBills.list),
     ]);
-    return [...doors, ...nonGst]
+    return [...gst, ...doors, ...nonGst]
       .map(mapConvexBill)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   },
@@ -148,7 +149,7 @@ export const invoiceService = {
       input.billKind === "mixed"
         ? await convex.mutation(api.anyBills.create, { ...payload, gst })
         : gst
-          ? await convex.mutation(api.doorBills.create, payload)
+          ? await convex.mutation(api.gstBills.create, payload)
           : await convex.mutation(api.nonGstBills.create, payload);
     if (!row) throw new Error("Unable to create invoice");
     await settingsService.updateSettings({

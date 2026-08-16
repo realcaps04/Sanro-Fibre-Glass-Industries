@@ -36,6 +36,12 @@ export default defineSchema({
     .index("by_share_token", ["shareToken"])
     .index("by_delivery_status", ["deliveryStatus"]),
 
+  GST_Bills: defineTable(billFields)
+    .index("by_customer", ["customerId"])
+    .index("by_number", ["number"])
+    .index("by_share_token", ["shareToken"])
+    .index("by_delivery_status", ["deliveryStatus"]),
+
   Non_Gst_Bills: defineTable(billFields)
     .index("by_customer", ["customerId"])
     .index("by_number", ["number"])

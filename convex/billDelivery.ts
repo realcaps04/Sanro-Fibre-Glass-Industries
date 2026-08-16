@@ -42,7 +42,7 @@ export const expireOld = internalMutation({
   args: {},
   handler: async (ctx) => {
     const cutoff = Date.now() - HOUR_MS;
-    for (const table of ["Door_Bills", "Non_Gst_Bills"] as const) {
+    for (const table of ["GST_Bills", "Door_Bills", "Non_Gst_Bills"] as const) {
       const rows = await ctx.db
         .query(table)
         .withIndex("by_delivery_status", (q) => q.eq("deliveryStatus", "pending"))

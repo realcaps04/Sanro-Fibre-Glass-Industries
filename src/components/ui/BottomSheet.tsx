@@ -21,6 +21,8 @@ export function BottomSheet({
 }: BottomSheetProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   const [mounted, setMounted] = useState(open);
   const [shown, setShown] = useState(false);
 
@@ -43,7 +45,7 @@ export function BottomSheet({
     document.body.style.overflow = "hidden";
 
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") onCloseRef.current();
     };
 
     document.addEventListener("keydown", onKey);
@@ -52,7 +54,7 @@ export function BottomSheet({
       document.body.style.overflow = "";
       previous?.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!mounted) return null;
 

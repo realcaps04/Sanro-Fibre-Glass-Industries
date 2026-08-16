@@ -84,14 +84,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     [remoteCustomers],
   );
   const remoteDoorBills = useQuery(api.doorBills.list);
+  const remoteGstBills = useQuery(api.gstBills.list);
   const remoteNonGstBills = useQuery(api.nonGstBills.list);
   const remotePayments = useQuery(api.payments.list);
   const invoices = useMemo(
     () =>
-      [...(remoteDoorBills ?? []), ...(remoteNonGstBills ?? [])]
+      [...(remoteGstBills ?? []), ...(remoteDoorBills ?? []), ...(remoteNonGstBills ?? [])]
         .map(mapConvexBill)
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
-    [remoteDoorBills, remoteNonGstBills],
+    [remoteDoorBills, remoteGstBills, remoteNonGstBills],
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

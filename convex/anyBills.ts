@@ -10,8 +10,8 @@ export const create = mutation({
     gst: v.boolean(),
   },
   handler: async (ctx, { gst, ...args }) => {
-    const taxRate = gst ? args.taxRate : 0;
-    const table = gst ? "Door_Bills" : "Non_Gst_Bills";
+    const taxRate = gst ? (args.taxRate > 0 ? args.taxRate : 0.18) : 0;
+    const table = gst ? "GST_Bills" : "Non_Gst_Bills";
     const row = await insertBill(ctx, table, {
       ...args,
       taxRate,
@@ -28,11 +28,12 @@ export const create = mutation({
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    const [doors, nonGst] = await Promise.all([
+    const [gstBills, doors, nonGst] = await Promise.all([
+      ctx.db.query("GST_Bills").collect(),
       ctx.db.query("Door_Bills").collect(),
       ctx.db.query("Non_Gst_Bills").collect(),
     ]);
-    return [...doors, ...nonGst]
+    return [...gstBills, ...doors, ...nonGst]
       .filter((row) => row.billKind === "mixed" || row.taxRate === 0)
       .sort((a, b) => b.date.localeCompare(a.date));
   },

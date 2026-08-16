@@ -40,16 +40,24 @@ export const record = mutation({
         .query("Door_Bills")
         .withIndex("by_customer", (q) => q.eq("customerId", args.customerId))
         .collect();
+      const gstBills = await ctx.db
+        .query("GST_Bills")
+        .withIndex("by_customer", (q) => q.eq("customerId", args.customerId))
+        .collect();
       const nonGst = await ctx.db
         .query("Non_Gst_Bills")
         .withIndex("by_customer", (q) => q.eq("customerId", args.customerId))
         .collect();
       targets.push(
-        ...[...doors, ...nonGst]
+        ...[...gstBills, ...doors, ...nonGst]
           .filter((doc) => doc.balance > 0 && doc.status !== "cancelled")
           .sort((a, b) => a.date.localeCompare(b.date))
           .map((doc) => ({
-            table: (doc.taxRate === 0 ? "Non_Gst_Bills" : "Door_Bills") as "Door_Bills" | "Non_Gst_Bills",
+            table: (
+              doc.taxRate === 0
+                ? "Non_Gst_Bills"
+                : "GST_Bills"
+            ) as "GST_Bills" | "Door_Bills" | "Non_Gst_Bills",
             doc,
           })),
       );

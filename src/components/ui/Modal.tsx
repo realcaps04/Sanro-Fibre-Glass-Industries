@@ -13,6 +13,8 @@ interface ModalProps {
 export function Modal({ open, onClose, title, children, className }: ModalProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open) return;
@@ -25,7 +27,7 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
     document.body.style.overflow = "hidden";
 
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") onCloseRef.current();
       if (event.key !== "Tab" || !panel) return;
       const nodes = [
         ...panel.querySelectorAll<HTMLElement>(
@@ -50,7 +52,7 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
       document.body.style.overflow = "";
       previous?.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 

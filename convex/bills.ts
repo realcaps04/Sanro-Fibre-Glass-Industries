@@ -1,7 +1,7 @@
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { billTotals, statusFromBalances } from "./totals";
 
-type BillTable = "Door_Bills" | "Non_Gst_Bills" | "Estimate";
+type BillTable = "Door_Bills" | "GST_Bills" | "Non_Gst_Bills" | "Estimate";
 
 type BillWrite = {
   customerId: string;
@@ -83,7 +83,7 @@ export async function insertBill(ctx: MutationCtx, table: BillTable, input: Bill
   const prefix = input.prefix ?? (table === "Estimate" ? "EST-" : "INV-");
   const number = await nextBillNumber(
     ctx,
-    table === "Estimate" ? ["Estimate"] : ["Door_Bills", "Non_Gst_Bills"],
+    table === "Estimate" ? ["Estimate"] : ["Door_Bills", "GST_Bills", "Non_Gst_Bills"],
     prefix,
   );
   const id = await ctx.db.insert(table, {
@@ -110,7 +110,7 @@ export async function patchBill(
 }
 
 export async function findBill(ctx: QueryCtx | MutationCtx, id: string) {
-  for (const table of ["Door_Bills", "Non_Gst_Bills", "Estimate"] as const) {
+  for (const table of ["GST_Bills", "Door_Bills", "Non_Gst_Bills", "Estimate"] as const) {
     const normalized = ctx.db.normalizeId(table, id);
     if (!normalized) continue;
     const doc = await ctx.db.get(normalized);

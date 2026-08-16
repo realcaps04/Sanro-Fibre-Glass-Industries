@@ -1,6 +1,5 @@
 import { InvoiceCard } from "@/components/billing/InvoiceCard";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { PaymentSheet } from "@/components/payments/PaymentSheet";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -16,7 +15,6 @@ export default function CustomerDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { customers, invoices } = useData();
-  const [payOpen, setPayOpen] = useState(false);
   const [statementOpen, setStatementOpen] = useState(false);
   const customer = customers.find((item) => item.id === id);
 
@@ -83,14 +81,11 @@ export default function CustomerDetails() {
           <p className="mt-1 text-lg font-semibold tabular-nums">{formatCurrency(purchases)}</p>
         </div>
       </div>
-      <div className="mt-4 flex gap-2">
-        {outstanding > 0 ? (
-          <Button onClick={() => setPayOpen(true)}>Record Payment</Button>
-        ) : null}
-        <Button variant="outline" onClick={() => setStatementOpen(true)}>
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Button variant="outline" fullWidth onClick={() => setStatementOpen(true)}>
           View Statement
         </Button>
-        <Button variant="outline" onClick={() => navigate("/billing/new")}>
+        <Button variant="outline" fullWidth onClick={() => navigate("/billing/new")}>
           New Bill
         </Button>
       </div>
@@ -109,11 +104,6 @@ export default function CustomerDetails() {
           onAction={() => navigate("/billing/new")}
         />
       )}
-      <PaymentSheet
-        open={payOpen}
-        onClose={() => setPayOpen(false)}
-        presetCustomerId={customer.id}
-      />
       <Overlay open={statementOpen} onClose={() => setStatementOpen(false)} title="Account Statement">
         <div className="space-y-3 text-sm">
           <p className="text-muted-foreground">{customer.address}</p>
