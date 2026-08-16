@@ -5,7 +5,9 @@ import { inferProductHsn } from "@/lib/hsn";
 import { matchesQuery } from "@/lib/search";
 import type { Product, ProductCategory } from "@/types";
 
-function normalizeInput(input: Omit<Product, "id">): Omit<Product, "id"> {
+export type ProductWrite = Omit<Product, "id"> & { clearImage?: boolean };
+
+function normalizeInput(input: ProductWrite): ProductWrite {
   const inferred = inferProductHsn(input);
   return {
     ...input,
@@ -39,7 +41,7 @@ export const productService = {
     });
   },
 
-  async createProduct(input: Omit<Product, "id">): Promise<Product> {
+  async createProduct(input: ProductWrite): Promise<Product> {
     const payload = normalizeInput(input);
     const row = await convex.mutation(api.products.create, {
       name: payload.name,
@@ -51,6 +53,7 @@ export const productService = {
       description: payload.description,
       hsnCode: payload.hsnCode,
       gstRate: payload.gstRate,
+      ...(payload.imageId ? { imageId: payload.imageId as never } : {}),
     });
     if (!row) {
       throw new Error("Unable to create product");
@@ -58,7 +61,7 @@ export const productService = {
     return mapConvexProduct(row);
   },
 
-  async updateProduct(id: string, input: Omit<Product, "id">): Promise<Product> {
+  async updateProduct(id: string, input: ProductWrite): Promise<Product> {
     const payload = normalizeInput(input);
     const row = await convex.mutation(api.products.update, {
       id,
@@ -70,6 +73,8 @@ export const productService = {
       description: payload.description,
       hsnCode: payload.hsnCode,
       gstRate: payload.gstRate,
+      ...(payload.imageId && !payload.clearImage ? { imageId: payload.imageId as never } : {}),
+      clearImage: Boolean(payload.clearImage),
     });
     if (!row) {
       throw new Error("Unable to update product");

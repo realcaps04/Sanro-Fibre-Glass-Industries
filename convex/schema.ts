@@ -13,6 +13,7 @@ export default defineSchema({
     description: v.optional(v.string()),
     hsnCode: v.string(),
     gstRate: v.number(),
+    imageId: v.optional(v.id("_storage")),
     legacyId: v.optional(v.string()),
   })
     .index("by_sku", ["sku"])

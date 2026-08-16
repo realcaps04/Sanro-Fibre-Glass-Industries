@@ -40,6 +40,8 @@ export interface Product {
   description?: string;
   hsnCode: string;
   gstRate: number;
+  imageId?: string;
+  imageUrl?: string;
 }
 
 export interface InvoiceLineItem {

@@ -57,7 +57,7 @@ interface DataContextValue {
   addCustomer: (input: Omit<Customer, "id" | "createdAt">) => Promise<Customer>;
   deleteCustomer: (customerId: string) => Promise<void>;
   addProduct: (input: Omit<Product, "id">) => Promise<Product>;
-  updateProduct: (id: string, input: Omit<Product, "id">) => Promise<Product>;
+  updateProduct: (id: string, input: Omit<Product, "id"> & { clearImage?: boolean }) => Promise<Product>;
   addExpense: (input: CreateExpenseInput) => Promise<Expense>;
   updateSettings: (patch: Partial<AppSettings>) => Promise<void>;
   cancelInvoice: (invoiceId: string) => Promise<void>;
@@ -264,9 +264,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return productService.createProduct(input);
   }, []);
 
-  const updateProduct = useCallback(async (id: string, input: Omit<Product, "id">) => {
-    return productService.updateProduct(id, input);
-  }, []);
+  const updateProduct = useCallback(
+    async (id: string, input: Omit<Product, "id"> & { clearImage?: boolean }) => {
+      return productService.updateProduct(id, input);
+    },
+    [],
+  );
 
   const addExpense = useCallback(
     async (input: CreateExpenseInput) => {

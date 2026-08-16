@@ -75,6 +75,13 @@ export function ProductSelector({
             const qty = quantities[product.id] ?? 1;
             return (
               <li key={product.id} className="flex items-center gap-3 px-3 py-3">
+                {product.imageUrl ? (
+                  <img
+                    src={product.imageUrl}
+                    alt=""
+                    className="h-12 w-12 shrink-0 rounded-xl object-cover"
+                  />
+                ) : null}
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{product.name}</p>
                   <p className="text-xs text-muted-foreground">

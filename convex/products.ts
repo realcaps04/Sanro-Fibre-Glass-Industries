@@ -14,11 +14,27 @@ async function findProduct(ctx: MutationCtx, id: string) {
     .unique();
 }
 
+async function withImageUrl<T extends { imageId?: string }>(
+  ctx: { storage: { getUrl: (id: T["imageId"] & string) => Promise<string | null> } },
+  row: T,
+) {
+  return {
+    ...row,
+    imageUrl: row.imageId ? await ctx.storage.getUrl(row.imageId) : null,
+  };
+}
+
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => await ctx.storage.generateUploadUrl(),
+});
+
 export const list = query({
   args: {},
   handler: async (ctx) => {
     const rows = await ctx.db.query("products").collect();
-    return rows.sort((a, b) => a.name.localeCompare(b.name));
+    const withImages = await Promise.all(rows.map((row) => withImageUrl(ctx, row)));
+    return withImages.sort((a, b) => a.name.localeCompare(b.name));
   },
 });
 
@@ -33,6 +49,7 @@ export const create = mutation({
     description: v.optional(v.string()),
     hsnCode: v.string(),
     gstRate: v.number(),
+    imageId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
     const sku = args.sku.trim().toUpperCase();
@@ -53,8 +70,10 @@ export const create = mutation({
       description: args.description?.trim() || undefined,
       hsnCode: args.hsnCode,
       gstRate: args.gstRate,
+      imageId: args.imageId,
     });
-    return await ctx.db.get(id);
+    const row = await ctx.db.get(id);
+    return row ? await withImageUrl(ctx, row) : row;
   },
 });
 
@@ -70,8 +89,10 @@ export const update = mutation({
     description: v.optional(v.string()),
     hsnCode: v.optional(v.string()),
     gstRate: v.optional(v.number()),
+    imageId: v.optional(v.id("_storage")),
+    clearImage: v.optional(v.boolean()),
   },
-  handler: async (ctx, { id, ...patch }) => {
+  handler: async (ctx, { id, clearImage, ...patch }) => {
     const product = await findProduct(ctx, id);
     if (!product) throw new Error("Product not found");
     const sku = patch.sku?.trim().toUpperCase();
@@ -81,6 +102,10 @@ export const update = mutation({
         .withIndex("by_sku", (q) => q.eq("sku", sku))
         .unique();
       if (existing) throw new Error("A product with this SKU already exists");
+    }
+    const nextImageId = clearImage ? undefined : (patch.imageId ?? product.imageId);
+    if ((clearImage || patch.imageId) && product.imageId && product.imageId !== nextImageId) {
+      await ctx.storage.delete(product.imageId);
     }
     await ctx.db.patch(product._id, {
       name: patch.name?.trim() ?? product.name,
@@ -94,7 +119,27 @@ export const update = mutation({
       hsnCode: patch.hsnCode ?? product.hsnCode,
       gstRate: patch.gstRate ?? product.gstRate,
     });
-    return await ctx.db.get(product._id);
+    if (clearImage) {
+      const current = await ctx.db.get(product._id);
+      if (!current) throw new Error("Product not found");
+      const { imageId: _removed, ...rest } = current;
+      await ctx.db.replace(product._id, {
+        name: rest.name,
+        sku: rest.sku,
+        category: rest.category,
+        price: rest.price,
+        stock: rest.stock,
+        unit: rest.unit,
+        description: rest.description,
+        hsnCode: rest.hsnCode,
+        gstRate: rest.gstRate,
+        legacyId: rest.legacyId,
+      });
+    } else if (patch.imageId) {
+      await ctx.db.patch(product._id, { imageId: patch.imageId });
+    }
+    const row = await ctx.db.get(product._id);
+    return row ? await withImageUrl(ctx, row) : row;
   },
 });
 

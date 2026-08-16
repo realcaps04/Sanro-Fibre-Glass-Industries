@@ -11,6 +11,8 @@ export interface ConvexProductRow {
   description?: string;
   hsnCode: string;
   gstRate: number;
+  imageId?: string;
+  imageUrl?: string | null;
   legacyId?: string;
 }
 
@@ -26,5 +28,7 @@ export function mapConvexProduct(row: ConvexProductRow): Product {
     description: row.description,
     hsnCode: row.hsnCode,
     gstRate: row.gstRate,
+    imageId: row.imageId,
+    imageUrl: row.imageUrl ?? undefined,
   };
 }

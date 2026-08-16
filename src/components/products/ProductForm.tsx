@@ -9,8 +9,10 @@ import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/cn";
 import { doorHsnPresets, formatHsn, gstPercent, waterproofHsnPresets, type HsnPreset } from "@/lib/hsn";
 import { productCategoryLabel } from "@/lib/labels";
+import { uploadProductImage } from "@/lib/productImage";
 import type { Product, ProductCategory } from "@/types";
-import { useEffect, useState } from "react";
+import { ImagePlus, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface ProductFormProps {
   open: boolean;
@@ -52,6 +54,8 @@ function formFromProduct(product: Product): Omit<Product, "id"> {
     description: product.description ?? "",
     hsnCode: product.hsnCode,
     gstRate: product.gstRate,
+    imageId: product.imageId,
+    imageUrl: product.imageUrl,
   };
 }
 
@@ -62,23 +66,38 @@ export function ProductForm({ open, onClose, existing }: ProductFormProps) {
   const [hsnKind, setHsnKind] = useState<HsnPreset["id"]>(doorHsnPresets[0].id);
   const [price, setPrice] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [clearImage, setClearImage] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   const presets = presetsFor(form.category);
   const editing = Boolean(existing);
 
   useEffect(() => {
     if (!open) return;
+    setImageFile(null);
+    setClearImage(false);
     if (existing) {
       const next = formFromProduct(existing);
       setForm(next);
       setHsnKind(presetIdFor(next));
       setPrice(String(existing.price));
+      setImagePreview(existing.imageUrl ?? null);
       return;
     }
     setForm(emptyForm());
     setHsnKind(doorHsnPresets[0].id);
     setPrice("");
+    setImagePreview(null);
   }, [existing, open]);
+
+  useEffect(() => {
+    if (!imageFile) return;
+    const url = URL.createObjectURL(imageFile);
+    setImagePreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [imageFile]);
 
   const applyPreset = (preset: HsnPreset) => {
     setHsnKind(preset.id);
@@ -112,12 +131,15 @@ export function ProductForm({ open, onClose, existing }: ProductFormProps) {
         stock: existing?.stock ?? 0,
         hsnCode: form.hsnCode.replace(/\s/g, ""),
         gstRate: form.gstRate,
+        imageId: imageFile ? await uploadProductImage(imageFile) : form.imageId,
+        clearImage: clearImage && !imageFile,
       };
       if (existing) {
         await updateProduct(existing.id, payload);
         toast("Product updated", "success");
       } else {
-        await addProduct(payload);
+        const { clearImage: _clear, ...createPayload } = payload;
+        await addProduct(createPayload);
         toast("Product added", "success");
       }
       onClose();
@@ -138,6 +160,62 @@ export function ProductForm({ open, onClose, existing }: ProductFormProps) {
   return (
     <Overlay open={open} onClose={onClose} title={editing ? "Edit Product" : "Add Product"}>
       <div className="space-y-4">
+        <div>
+          <Label>Product image</Label>
+          <input
+            ref={fileInput}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (!file) return;
+              setClearImage(false);
+              setImageFile(file);
+            }}
+          />
+          <div className="mt-2 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => fileInput.current?.click()}
+              className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-border bg-muted"
+              aria-label="Upload product image"
+            >
+              {imagePreview ? (
+                <img src={imagePreview} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <ImagePlus className="h-6 w-6 text-muted-foreground" />
+              )}
+            </button>
+            <div className="min-w-0 flex-1 space-y-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInput.current?.click()}
+              >
+                {imagePreview ? "Change image" : "Upload image"}
+              </Button>
+              {imagePreview ? (
+                <button
+                  type="button"
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-danger"
+                  onClick={() => {
+                    setImageFile(null);
+                    setImagePreview(null);
+                    setClearImage(true);
+                    if (fileInput.current) fileInput.current.value = "";
+                  }}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Remove
+                </button>
+              ) : (
+                <p className="text-xs text-muted-foreground">JPG or PNG, shown on the product list.</p>
+              )}
+            </div>
+          </div>
+        </div>
         <div>
           <Label htmlFor="prd-name">Product name</Label>
           <Input

@@ -105,6 +105,17 @@ export default function Products() {
         <div className="elevated divide-y divide-border rounded-lg">
           {visible.map((product) => (
             <div key={product.id} className="flex items-start gap-3 px-4 py-3">
+              {product.imageUrl ? (
+                <img
+                  src={product.imageUrl}
+                  alt=""
+                  className="h-14 w-14 shrink-0 rounded-2xl object-cover"
+                />
+              ) : (
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                  <Package className="h-5 w-5" />
+                </span>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="font-medium">{product.name}</p>
                 <p className="text-sm text-muted-foreground">
