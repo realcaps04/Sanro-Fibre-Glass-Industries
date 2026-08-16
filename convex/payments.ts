@@ -60,7 +60,7 @@ export const record = mutation({
       | {
           id: string;
           number: string;
-          billKind?: "doors" | "waterproofing";
+          billKind?: "doors" | "waterproofing" | "mixed";
           productsUsed: string;
         }
       | undefined;

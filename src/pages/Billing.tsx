@@ -6,15 +6,15 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { useData } from "@/context/DataContext";
-import { inferBillKind, type BillKind } from "@/lib/billing";
+import { inferBillKind, isAnyBill, type BillKind } from "@/lib/billing";
 import { formatCurrency } from "@/lib/currency";
 import { matchesQuery } from "@/lib/search";
 import { activeInvoices } from "@/lib/stats";
 import { cn } from "@/lib/cn";
 import type { InvoiceStatus } from "@/types";
 import { Plus } from "lucide-react";
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const filters: Array<{ value: InvoiceStatus | "all"; label: string }> = [
   { value: "all", label: "All" },
@@ -24,29 +24,37 @@ const filters: Array<{ value: InvoiceStatus | "all"; label: string }> = [
 ];
 
 export default function Billing({
-  nonGst = false,
   kind,
+  mixed = false,
 }: {
-  nonGst?: boolean;
   kind?: BillKind;
+  mixed?: boolean;
 }) {
   const { invoices, products, loading, error, refresh } = useData();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<InvoiceStatus | "all">("all");
   const [billOpen, setBillOpen] = useState(false);
 
+  useEffect(() => {
+    if (!mixed || searchParams.get("new") !== "1") return;
+    setBillOpen(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete("new");
+    setSearchParams(next, { replace: true });
+  }, [mixed, searchParams, setSearchParams]);
+
   const scoped = useMemo(
     () =>
       invoices.filter((invoice) => {
+        if (mixed) return isAnyBill(invoice);
         const invoiceKind = inferBillKind(invoice, products);
-        if (kind) {
-          if (invoiceKind !== kind) return false;
-          if (kind === "waterproofing") return true;
-        }
-        return nonGst ? invoice.taxRate === 0 : invoice.taxRate > 0;
+        if (invoiceKind === "mixed" || invoice.taxRate === 0) return false;
+        if (kind) return invoiceKind === kind;
+        return invoice.taxRate > 0;
       }),
-    [invoices, kind, nonGst, products],
+    [invoices, kind, mixed, products],
   );
 
   const visible = useMemo(
@@ -75,24 +83,25 @@ export default function Billing({
     };
   }, [scoped]);
 
+  const title =
+    kind === "waterproofing"
+      ? "Water proofing"
+      : kind === "doors"
+        ? "Door Bills"
+        : mixed
+          ? "Any Bills"
+          : "Billing";
+
   if (loading) return <PageSkeleton />;
   if (error) return <ErrorState title="Unable to load invoices" onRetry={() => void refresh()} />;
 
   return (
     <div>
       <PageHeader
-        title={
-          kind === "waterproofing"
-            ? "Water proofing"
-            : kind === "doors"
-              ? "Door Bills"
-              : nonGst
-                ? "Non GST Bills"
-                : "Billing"
-        }
+        title={title}
         actions={
           <Button icon={<Plus className="h-4 w-4" />} onClick={() => setBillOpen(true)}>
-            {nonGst ? "New Non GST Bill" : "New Bill"}
+            New Bill
           </Button>
         }
       />
@@ -133,11 +142,16 @@ export default function Billing({
           </button>
         ))}
       </div>
-      <InvoiceList invoices={visible} allowDelete={kind === "doors"} />
+      <InvoiceList
+        invoices={visible}
+        allowDelete={kind === "doors" || mixed}
+        showTaxKind={mixed}
+        onCreate={() => setBillOpen(true)}
+      />
       <NewBillFlow
         open={billOpen}
         onClose={() => setBillOpen(false)}
-        nonGst={nonGst}
+        mixed={mixed}
         kind={kind}
         onCreated={(invoiceId) => navigate(`/billing/${invoiceId}`)}
       />

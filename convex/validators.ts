@@ -14,7 +14,11 @@ export const invoiceStatus = v.union(
   v.literal("cancelled"),
 );
 
-export const billKind = v.union(v.literal("doors"), v.literal("waterproofing"));
+export const billKind = v.union(
+  v.literal("doors"),
+  v.literal("waterproofing"),
+  v.literal("mixed"),
+);
 
 export const productCategory = v.union(
   v.literal("doors"),
@@ -57,6 +61,7 @@ export const billFields = {
   status: invoiceStatus,
   notes: v.optional(v.string()),
   billKind: v.optional(billKind),
+  gstBill: v.optional(v.boolean()),
   createdAt: v.string(),
   shareToken: v.optional(v.string()),
   deliveryStatus: v.optional(

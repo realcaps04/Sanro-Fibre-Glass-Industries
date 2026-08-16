@@ -23,6 +23,10 @@ interface NewBillSheetProps {
 }
 
 function sheetTitle(kind: BillKind, nonGst: boolean, editing: boolean) {
+  if (kind === "mixed") {
+    if (editing) return nonGst ? "Edit Non GST Bill" : "Edit GST Bill";
+    return nonGst ? "New Non GST Bill" : "New GST Bill";
+  }
   if (editing) {
     return kind === "waterproofing" ? "Edit Water proof Bill" : "Edit Door Bill";
   }
@@ -30,6 +34,16 @@ function sheetTitle(kind: BillKind, nonGst: boolean, editing: boolean) {
     return kind === "waterproofing" ? "New Non GST Water proof Bill" : "New Non GST Door Bill";
   }
   return kind === "waterproofing" ? "New Water proof Bill" : "New Door Bill";
+}
+
+function productPrompt(kind: BillKind) {
+  if (kind === "mixed") return "Choose from all products";
+  return kind === "waterproofing" ? "waterproof products" : "doors";
+}
+
+function productSelectorTitle(kind: BillKind) {
+  if (kind === "mixed") return "Select product";
+  return kind === "waterproofing" ? "Select waterproof product" : "Select door";
 }
 
 export function NewBillSheet({
@@ -246,7 +260,9 @@ export function NewBillSheet({
                 onClick={() => setProductOpen(true)}
                 className="w-full rounded-2xl border border-dashed border-border px-4 py-8 text-sm text-muted-foreground"
               >
-                Choose from {kind === "waterproofing" ? "waterproof products" : "doors"}
+                {kind === "mixed"
+                  ? productPrompt(kind)
+                  : `Choose from ${productPrompt(kind)}`}
               </button>
             )}
           </section>
@@ -283,7 +299,7 @@ export function NewBillSheet({
         onClose={() => setProductOpen(false)}
         onAdd={addProduct}
         allowedCategories={billKindCategories[kind]}
-        title={`Select ${kind === "waterproofing" ? "waterproof product" : "door"}`}
+        title={productSelectorTitle(kind)}
         searchPlaceholder={billKindSearchPlaceholder[kind]}
       />
     </>

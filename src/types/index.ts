@@ -14,7 +14,7 @@ export type ExpenseCategory =
   | "other";
 export type AppearanceTheme = "light" | "dark" | "system";
 export type SalesPeriod = "today" | "7d" | "30d";
-export type BillKind = "doors" | "waterproofing";
+export type BillKind = "doors" | "waterproofing" | "mixed";
 
 export interface Customer {
   id: string;

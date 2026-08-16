@@ -9,9 +9,11 @@ import { Link } from "react-router-dom";
 export function InvoiceCard({
   invoice,
   onDelete,
+  showTaxKind = false,
 }: {
   invoice: Invoice;
   onDelete?: (invoice: Invoice) => void;
+  showTaxKind?: boolean;
 }) {
   return (
     <div className="flex items-center gap-1 hover:bg-muted/70">
@@ -26,7 +28,12 @@ export function InvoiceCard({
         </div>
         <div className="text-right">
           <p className="text-sm font-semibold tabular-nums">{formatCurrency(invoice.grandTotal)}</p>
-          <div className="mt-1 flex justify-end">
+          <div className="mt-1 flex flex-col items-end gap-1">
+            {showTaxKind ? (
+              <p className="text-[11px] font-medium text-muted-foreground">
+                {invoice.taxRate === 0 ? "Non GST" : "GST"}
+              </p>
+            ) : null}
             <StatusBadge status={invoice.status} />
           </div>
         </div>

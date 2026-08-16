@@ -126,14 +126,15 @@ export const invoiceService = {
 
   async createInvoice(input: CreateInvoiceInput): Promise<Invoice> {
     const settings = await settingsService.getSettings();
-    const payload = billArgs(
-      { ...input, taxRate: input.taxRate ?? settings.invoice.taxRate },
-      settings.invoice.prefix,
-    );
+    const taxRate = input.taxRate === 0 ? 0 : (input.taxRate ?? settings.invoice.taxRate);
+    const payload = billArgs({ ...input, taxRate }, settings.invoice.prefix);
+    const gst = taxRate > 0;
     const row =
-      payload.taxRate === 0
-        ? await convex.mutation(api.nonGstBills.create, payload)
-        : await convex.mutation(api.doorBills.create, payload);
+      input.billKind === "mixed"
+        ? await convex.mutation(api.anyBills.create, { ...payload, gst })
+        : gst
+          ? await convex.mutation(api.doorBills.create, payload)
+          : await convex.mutation(api.nonGstBills.create, payload);
     if (!row) throw new Error("Unable to create invoice");
     await settingsService.updateSettings({
       invoice: { ...settings.invoice, nextNumber: settings.invoice.nextNumber + 1 },

@@ -67,13 +67,17 @@ export function InvoicePreview({ invoice, settings, customer }: InvoicePreviewPr
     : "";
   const billType = gstBill ? "GST Tax Invoice" : "Non-GST Invoice";
   const serviceType =
-    invoice.billKind === "waterproofing"
+    invoice.billKind === "mixed"
       ? gstBill
-        ? "Water proof billing (GST)"
-        : "Water proof billing (Non-GST)"
-      : gstBill
-        ? "Door Billing (GST)"
-        : "Door Billing (Non-GST)";
+        ? "Any Bill (GST)"
+        : "Any Bill (Non-GST)"
+      : invoice.billKind === "waterproofing"
+        ? gstBill
+          ? "Water proof billing (GST)"
+          : "Water proof billing (Non-GST)"
+        : gstBill
+          ? "Door Billing (GST)"
+          : "Door Billing (Non-GST)";
 
   useEffect(() => {
     const wrap = wrapRef.current;

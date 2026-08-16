@@ -24,7 +24,7 @@ type BillWrite = {
   paymentMethod: "cash" | "upi" | "bank" | "credit";
   notes?: string;
   date?: string;
-  billKind?: "doors" | "waterproofing";
+  billKind?: "doors" | "waterproofing" | "mixed";
   prefix?: string;
 };
 
@@ -69,6 +69,7 @@ export function buildBillDoc(input: BillWrite, number: string, createdAt: string
     status: statusFromBalances(totals.amountPaid, totals.grandTotal),
     notes: input.notes?.trim() || undefined,
     billKind: input.billKind,
+    gstBill: input.taxRate > 0,
     createdAt,
   };
 }

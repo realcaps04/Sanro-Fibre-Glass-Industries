@@ -21,6 +21,7 @@ const kindFilters: Array<{ value: KindFilter; label: string }> = [
   { value: "all", label: "All" },
   { value: "doors", label: "Doors" },
   { value: "waterproofing", label: "Water proofing" },
+  { value: "mixed", label: "Any Bill" },
 ];
 
 function productUsed(invoice: Invoice): string {

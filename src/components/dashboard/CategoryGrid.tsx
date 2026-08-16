@@ -4,8 +4,8 @@ import {
   Droplets,
   FileText,
   IndianRupee,
+  Layers,
   Package,
-  Receipt,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -18,10 +18,10 @@ const categories: Array<{
 }> = [
   { to: "/billing", label: "Door Bills", icon: FileText },
   { to: "/waterproofing-bills", label: "Water proofing", icon: Droplets },
+  { to: "/any-bills?new=1", label: "Any Bill", icon: Layers },
   { to: "/payments", label: "Payments", icon: IndianRupee },
   { to: "/customers", label: "Customers", icon: Users },
   { to: "/products", label: "Products", icon: Package },
-  { to: "/non-gst-bills", label: "Non GST Bills", icon: Receipt },
   { to: "/reports", label: "Reports", icon: BarChart3 },
   { to: "/estimates", label: "Estimate", icon: ClipboardPen },
 ];

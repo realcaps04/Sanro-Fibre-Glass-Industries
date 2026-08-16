@@ -6,7 +6,7 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
-import { inferBillKind } from "@/lib/billing";
+import { inferBillKind, isAnyBill } from "@/lib/billing";
 import { formatInvoiceAmount } from "@/lib/currency";
 import { invoiceWhatsAppMessage } from "@/lib/invoiceLink";
 import { createInvoicePdfFile, downloadInvoicePdf, downloadPdfFile } from "@/lib/invoicePdf";
@@ -33,10 +33,10 @@ export default function InvoiceDetails() {
   const customer = customers.find((item) => item.id === invoice?.customerId);
   const filename = invoice ? `${invoice.number.replace(/\s+/g, "-")}.pdf` : "invoice.pdf";
   const listPath = invoice
-    ? inferBillKind(invoice, products) === "waterproofing"
-      ? "/waterproofing-bills"
-      : invoice.taxRate === 0
-        ? "/non-gst-bills"
+    ? isAnyBill(invoice)
+      ? "/any-bills"
+      : inferBillKind(invoice, products) === "waterproofing"
+        ? "/waterproofing-bills"
         : "/billing"
     : "/billing";
 

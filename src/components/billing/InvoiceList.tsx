@@ -11,9 +11,13 @@ import { useNavigate } from "react-router-dom";
 export function InvoiceList({
   invoices,
   allowDelete = false,
+  onCreate,
+  showTaxKind = false,
 }: {
   invoices: Invoice[];
   allowDelete?: boolean;
+  onCreate?: () => void;
+  showTaxKind?: boolean;
 }) {
   const navigate = useNavigate();
   const { deleteInvoice } = useData();
@@ -27,7 +31,7 @@ export function InvoiceList({
         title="No invoices yet"
         description="Your invoices will appear here once you create your first bill."
         actionLabel="Create New Bill"
-        onAction={() => navigate("/billing/new")}
+        onAction={() => (onCreate ? onCreate() : navigate("/billing/new"))}
       />
     );
   }
@@ -39,6 +43,7 @@ export function InvoiceList({
           <InvoiceCard
             key={invoice.id}
             invoice={invoice}
+            showTaxKind={showTaxKind}
             onDelete={allowDelete ? setPending : undefined}
           />
         ))}

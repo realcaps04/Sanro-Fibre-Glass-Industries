@@ -5,16 +5,19 @@ export type { BillKind };
 export const billKindLabel: Record<BillKind, string> = {
   doors: "Door Billing",
   waterproofing: "Water proof billing",
+  mixed: "Any Bill",
 };
 
 export const billKindCategories: Record<BillKind, ProductCategory[]> = {
   doors: ["doors"],
   waterproofing: ["waterproofing"],
+  mixed: ["doors", "windows", "accessories", "waterproofing", "other"],
 };
 
 export const billKindSearchPlaceholder: Record<BillKind, string> = {
   doors: "Search doors",
   waterproofing: "Search waterproof products",
+  mixed: "Search all products",
 };
 
 export function inferBillKind(
@@ -28,4 +31,8 @@ export function inferBillKind(
     return "waterproofing";
   }
   return "doors";
+}
+
+export function isAnyBill(invoice: { billKind?: BillKind; taxRate: number }): boolean {
+  return invoice.billKind === "mixed" || invoice.taxRate === 0;
 }

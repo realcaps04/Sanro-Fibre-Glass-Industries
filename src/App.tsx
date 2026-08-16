@@ -34,7 +34,8 @@ export default function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/billing" element={<Billing kind="doors" />} />
               <Route path="/waterproofing-bills" element={<Billing kind="waterproofing" />} />
-              <Route path="/non-gst-bills" element={<Billing nonGst />} />
+              <Route path="/any-bills" element={<Billing mixed />} />
+              <Route path="/non-gst-bills" element={<Navigate to="/any-bills" replace />} />
               <Route path="/billing/new" element={<NewBill />} />
               <Route path="/billing/:id" element={<InvoiceDetails />} />
               <Route path="/transactions" element={<Transactions />} />
