@@ -1,6 +1,5 @@
 import { CategoryGrid } from "@/components/dashboard/CategoryGrid";
 import { FeaturedCard } from "@/components/dashboard/FeaturedCard";
-import { HeroWaves } from "@/components/dashboard/HeroWaves";
 import { NewBillFlow } from "@/components/billing/NewBillFlow";
 import { brandConfig } from "@/brand/config";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
@@ -28,9 +27,8 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto w-full max-w-[430px] lg:max-w-none">
-      <section className="hero-gradient relative overflow-hidden px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[4.75rem] text-white">
-        <HeroWaves />
-        <header className="relative z-10 flex items-center gap-3">
+      <section className="hero-gradient px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-12 text-white">
+        <header className="flex items-center gap-3">
           <img
             src={brandConfig.logo}
             alt=""
@@ -44,7 +42,7 @@ export default function Dashboard() {
           </div>
         </header>
 
-        <div className="relative z-10 mt-6">
+        <div className="mt-6">
           <p className="text-[13px] leading-none text-white/70">Total Sales</p>
           <p className="display-number mt-2 text-white">{formatCurrency(totalSales)}</p>
         </div>
@@ -69,7 +67,7 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <section className="relative z-10 -mt-8 space-y-6 bg-background px-5 pt-2 pb-4">
+      <section className="relative z-10 -mt-8 space-y-6 rounded-t-[36px] bg-background px-5 pt-7 pb-4">
         <CategoryGrid />
         <FeaturedCard />
       </section>

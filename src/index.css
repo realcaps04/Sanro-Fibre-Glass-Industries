@@ -167,27 +167,23 @@ h3 {
     linear-gradient(165deg, var(--hero-from) 0%, var(--hero-via) 48%, var(--hero-to) 100%);
 }
 
-@keyframes hero-wave-shift {
-  from {
-    transform: translate3d(0, 0, 0);
+@keyframes hero-wave-3d {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
   }
-  to {
-    transform: translate3d(-50%, 0, 0);
+  50% {
+    transform: translate3d(-2%, 1.4%, 0) scale(1.03);
   }
 }
 
-.hero-wave-shift {
-  animation: hero-wave-shift 14s linear infinite;
-}
-
-.hero-wave-shift-delay {
-  animation-duration: 18s;
-  animation-direction: reverse;
+.hero-wave-3d {
+  animation: hero-wave-3d 16s ease-in-out infinite;
+  transform-origin: 70% 80%;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-wave-shift,
-  .hero-wave-shift-delay {
+  .hero-wave-3d {
     animation: none;
   }
 }
