@@ -167,27 +167,6 @@ h3 {
     linear-gradient(165deg, var(--hero-from) 0%, var(--hero-via) 48%, var(--hero-to) 100%);
 }
 
-@keyframes hero-wave-3d {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(-2%, 1.4%, 0) scale(1.03);
-  }
-}
-
-.hero-wave-3d {
-  animation: hero-wave-3d 16s ease-in-out infinite;
-  transform-origin: 70% 80%;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-wave-3d {
-    animation: none;
-  }
-}
-
 .glass-circle {
   background: rgb(255 255 255 / 0.12);
   backdrop-filter: blur(18px);
