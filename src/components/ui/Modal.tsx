@@ -8,9 +8,10 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   className?: string;
+  contentClassName?: string;
 }
 
-export function Modal({ open, onClose, title, children, className }: ModalProps) {
+export function Modal({ open, onClose, title, children, className, contentClassName }: ModalProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
@@ -87,7 +88,7 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="overflow-y-auto p-4">{children}</div>
+        <div className={cn("overflow-y-auto p-4", contentClassName)}>{children}</div>
       </div>
     </div>
   );

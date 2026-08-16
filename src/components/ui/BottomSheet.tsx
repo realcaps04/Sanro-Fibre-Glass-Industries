@@ -8,6 +8,7 @@ interface BottomSheetProps {
   title: string;
   children: ReactNode;
   className?: string;
+  contentClassName?: string;
   nested?: boolean;
 }
 
@@ -17,6 +18,7 @@ export function BottomSheet({
   title,
   children,
   className,
+  contentClassName,
   nested = false,
 }: BottomSheetProps) {
   const titleId = useId();
@@ -101,7 +103,9 @@ export function BottomSheet({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">{children}</div>
+        <div className={cn("min-h-0 flex-1 overflow-y-auto px-5 pb-5", contentClassName)}>
+          {children}
+        </div>
       </div>
     </div>
   );

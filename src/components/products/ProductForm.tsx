@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Overlay } from "@/components/ui/Overlay";
-import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/context/ToastContext";
@@ -158,7 +157,12 @@ export function ProductForm({ open, onClose, existing }: ProductFormProps) {
   };
 
   return (
-    <Overlay open={open} onClose={onClose} title={editing ? "Edit Product" : "Add Product"}>
+    <Overlay
+      open={open}
+      onClose={onClose}
+      title={editing ? "Edit Product" : "Add Product"}
+      contentClassName="no-scrollbar"
+    >
       <div className="space-y-4">
         <div>
           <Label>Product image</Label>
@@ -234,18 +238,27 @@ export function ProductForm({ open, onClose, existing }: ProductFormProps) {
           />
         </div>
         <div>
-          <Label htmlFor="prd-cat">Category</Label>
-          <Select
-            id="prd-cat"
-            value={form.category}
-            onChange={(event) => changeCategory(event.target.value as ProductCategory)}
-          >
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {productCategoryLabel[category]}
-              </option>
-            ))}
-          </Select>
+          <p className="mb-2 text-sm font-medium">Category</p>
+          <div className="grid grid-cols-2 gap-2">
+            {categories.map((category) => {
+              const active = form.category === category;
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => changeCategory(category)}
+                  className={cn(
+                    "rounded-2xl border px-3 py-3 text-left text-sm font-semibold tracking-[-0.02em]",
+                    active
+                      ? "border-primary bg-primary/8 text-foreground"
+                      : "border-border bg-card text-muted-foreground",
+                  )}
+                >
+                  {productCategoryLabel[category]}
+                </button>
+              );
+            })}
+          </div>
         </div>
         <div>
           <p className="mb-2 text-sm font-medium">

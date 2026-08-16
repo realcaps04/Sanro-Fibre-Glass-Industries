@@ -143,6 +143,23 @@ export const update = mutation({
   },
 });
 
+export const setImage = mutation({
+  args: {
+    id: v.string(),
+    imageId: v.id("_storage"),
+  },
+  handler: async (ctx, { id, imageId }) => {
+    const product = await findProduct(ctx, id);
+    if (!product) throw new Error("Product not found");
+    if (product.imageId && product.imageId !== imageId) {
+      await ctx.storage.delete(product.imageId);
+    }
+    await ctx.db.patch(product._id, { imageId });
+    const row = await ctx.db.get(product._id);
+    return row ? await withImageUrl(ctx, row) : row;
+  },
+});
+
 export const remove = mutation({
   args: { id: v.string() },
   handler: async (ctx, { id }) => {

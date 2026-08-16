@@ -80,6 +80,13 @@ export const productService = {
     if (!row) {
       throw new Error("Unable to update product");
     }
+    if (payload.imageId && !payload.clearImage) {
+      const withImage = await convex.mutation(api.products.setImage, {
+        id: row._id,
+        imageId: payload.imageId as never,
+      });
+      if (withImage) return mapConvexProduct(withImage);
+    }
     return mapConvexProduct(row);
   },
 

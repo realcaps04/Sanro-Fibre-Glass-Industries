@@ -9,22 +9,44 @@ interface OverlayProps {
   title: string;
   children: ReactNode;
   className?: string;
+  contentClassName?: string;
   nested?: boolean;
 }
 
-export function Overlay({ open, onClose, title, children, className, nested }: OverlayProps) {
+export function Overlay({
+  open,
+  onClose,
+  title,
+  children,
+  className,
+  contentClassName,
+  nested,
+}: OverlayProps) {
   const isDesktop = useIsDesktop();
 
   if (isDesktop) {
     return (
-      <Modal open={open} onClose={onClose} title={title} className={className}>
+      <Modal
+        open={open}
+        onClose={onClose}
+        title={title}
+        className={className}
+        contentClassName={contentClassName}
+      >
         {children}
       </Modal>
     );
   }
 
   return (
-    <BottomSheet open={open} onClose={onClose} title={title} className={className} nested={nested}>
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      title={title}
+      className={className}
+      contentClassName={contentClassName}
+      nested={nested}
+    >
       {children}
     </BottomSheet>
   );

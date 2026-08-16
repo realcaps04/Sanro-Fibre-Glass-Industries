@@ -6,6 +6,7 @@ import { useToast } from "@/context/ToastContext";
 import { formatCurrency } from "@/lib/currency";
 import { dailySalesSeries, expensesInMonth, receivablesTotal, todaySales } from "@/lib/stats";
 import { paymentLabel, productCategoryLabel } from "@/lib/labels";
+import { Download, Eye } from "lucide-react";
 import { useMemo } from "react";
 
 export default function Reports() {
@@ -101,7 +102,7 @@ export default function Reports() {
   ];
 
   return (
-    <div>
+    <div className="no-scrollbar">
       <PageHeader title="Reports" description="Figures are calculated from local billing data." />
       <div className="mb-5 grid grid-cols-2 gap-2 lg:grid-cols-4">
         <div className="elevated rounded-lg px-3 py-3">
@@ -134,30 +135,35 @@ export default function Reports() {
       <div className="grid gap-4 lg:grid-cols-2">
         {reports.map((report) => (
           <section key={report.title} className="elevated rounded-lg p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h2 className="text-sm font-medium">{report.title}</h2>
-                <p className="mt-1 text-xl font-semibold tracking-tight">{report.value}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{report.detail}</p>
-              </div>
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => toast("Report opened")}>
-                  View
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    window.print();
-                    toast("PDF ready");
-                  }}
-                >
-                  Export PDF
-                </Button>
-              </div>
-            </div>
+            <h2 className="text-sm font-medium">{report.title}</h2>
+            <p className="mt-1 text-xl font-semibold tracking-tight">{report.value}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{report.detail}</p>
             <div className="mt-4">
               <Sparkline data={report.series.length ? report.series : [{ label: "0", value: 0 }]} />
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <Button
+                size="sm"
+                fullWidth
+                className="min-w-0"
+                icon={<Eye className="h-4 w-4 shrink-0" />}
+                onClick={() => toast("Report opened")}
+              >
+                View
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                fullWidth
+                className="btn-lime min-w-0 text-[#003f34] hover:bg-transparent hover:opacity-92"
+                icon={<Download className="h-4 w-4 shrink-0" />}
+                onClick={() => {
+                  window.print();
+                  toast("PDF ready");
+                }}
+              >
+                Export PDF
+              </Button>
             </div>
           </section>
         ))}
