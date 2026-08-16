@@ -1,10 +1,12 @@
 import { PageHeader } from "@/components/layout/PageHeader";
+import { DeleteConfirmOverlay } from "@/components/ui/DeleteConfirmOverlay";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useData } from "@/context/DataContext";
+import { useToast } from "@/context/ToastContext";
 import { inferBillKind, type BillKind } from "@/lib/billing";
 import { cn } from "@/lib/cn";
 import { formatCurrency } from "@/lib/currency";
@@ -12,6 +14,7 @@ import { paymentLabel } from "@/lib/labels";
 import { matchesQuery } from "@/lib/search";
 import { activeInvoices } from "@/lib/stats";
 import type { Invoice } from "@/types";
+import { Trash2 } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 
@@ -42,9 +45,11 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 }
 
 export default function Payments() {
-  const { invoices, products, loading, error, refresh } = useData();
+  const { invoices, products, loading, error, refresh, deleteInvoice } = useData();
+  const { toast } = useToast();
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState<KindFilter>("all");
+  const [pending, setPending] = useState<Invoice | null>(null);
 
   const payments = useMemo(
     () =>
@@ -135,26 +140,35 @@ export default function Payments() {
       {visible.length ? (
         <div className="space-y-3">
           {visible.map(({ invoice, products: used }) => (
-            <Link
-              key={invoice.id}
-              to={`/billing/${invoice.id}`}
-              className="elevated block rounded-[24px] px-4 py-4"
-            >
-              <div className="space-y-3.5">
-                <Field label="Customer name">{invoice.customerName}</Field>
-                <Field label="Product used">
-                  <span className="leading-snug">{used}</span>
-                </Field>
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Payment status">
-                    <StatusBadge status={invoice.status} />
+            <div key={invoice.id} className="elevated flex items-start rounded-[24px]">
+              <Link to={`/billing/${invoice.id}`} className="min-w-0 flex-1 px-4 py-4">
+                <div className="space-y-3.5">
+                  <Field label="Customer name">{invoice.customerName}</Field>
+                  <Field label="Product used">
+                    <span className="leading-snug">{used}</span>
                   </Field>
-                  <Field label="Payment amount">
-                    <span className="tabular-nums">{formatCurrency(invoice.amountPaid)}</span>
-                  </Field>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="Payment status">
+                      <StatusBadge status={invoice.status} />
+                    </Field>
+                    <Field label="Payment amount">
+                      <span className="tabular-nums">{formatCurrency(invoice.amountPaid)}</span>
+                    </Field>
+                  </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+              <button
+                type="button"
+                aria-label={`Delete payment ${invoice.number}`}
+                onClick={() => setPending(invoice)}
+                className={cn(
+                  "mt-3 mr-3 shrink-0 rounded-md p-2 text-muted-foreground",
+                  "hover:bg-danger/10 hover:text-danger",
+                )}
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
           ))}
         </div>
       ) : (
@@ -163,6 +177,17 @@ export default function Payments() {
           description="Payments from customers will show here for every product type."
         />
       )}
+      <DeleteConfirmOverlay
+        open={Boolean(pending)}
+        title="Delete payment"
+        description={`Enter the password to delete ${pending?.number ?? "this payment"}. This cannot be undone.`}
+        onClose={() => setPending(null)}
+        onConfirm={async () => {
+          if (!pending) return;
+          await deleteInvoice(pending.id);
+          toast(`${pending.number} deleted`, "success");
+        }}
+      />
     </div>
   );
 }
